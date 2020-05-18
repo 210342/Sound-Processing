@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SoundManipulation
 {
@@ -16,6 +17,7 @@ namespace SoundManipulation
         decimal SampleRate { get; }
         decimal Frequency { get; }
         decimal Period { get; }
+        IWave FourierTransform { get; }
 
         IWave Calculate(IWave other, Func<Complex, Complex, Complex> operation);
         IWave Add(IWave other);
