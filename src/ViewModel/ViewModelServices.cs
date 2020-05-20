@@ -12,11 +12,9 @@ namespace ViewModels
         public override void Load()
         {
             Bind<IIOSoundController>().To<IOSoundController>();
-            foreach (Type viewModelType in GetType().Assembly.GetTypes()
-                .Where(t => typeof(ViewModel).IsAssignableFrom(t) && !t.Equals(typeof(ViewModel))))
-            {
-                Bind(viewModelType).To(viewModelType);
-            }
+            Bind<MainMDIViewModel>().To<MainMDIViewModel>().InSingletonScope();
+            Bind<ToolbarsViewModel>().To<ToolbarsViewModel>().InSingletonScope();
+            Bind<TabContentViewModel>().To<TabContentViewModel>().InTransientScope();
         }
     }
 }

@@ -1,10 +1,13 @@
-﻿using SoundManipulation;
+﻿using AsyncAwaitBestPractices.MVVM;
+using SoundManipulation;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using ViewModels.Controllers;
+using ViewModels.Model;
 
 namespace ViewModels
 {
@@ -12,6 +15,22 @@ namespace ViewModels
     {
         #region Observable properties
         public ObservableCollection<TabContentViewModel> Contents { get; } = new ObservableCollection<TabContentViewModel>();
+
+        private TabContentViewModel _selectedTab;
+
+        public TabContentViewModel SelectedTab 
+        { 
+            get { return _selectedTab; } 
+            set
+            { 
+                _selectedTab = value; 
+                OnPropertyChanged(); 
+            }
+        }
+        #endregion
+
+        #region Commands
+
         #endregion
 
         public IIOSoundController IOController { get; }
@@ -28,8 +47,15 @@ namespace ViewModels
 
         public async Task OpenSoundFile()
         {
-            IWave wave = await IOController?.OpenSoundFile();
-            Contents.Add(new TabContentViewModel(wave));
+            TitledObject<IWave> wave = await IOController?.OpenSoundFile();
+            TabContentViewModel newContent = new TabContentViewModel(wave);
+            Contents.Add(newContent);
+            SelectedTab = newContent;
+        }
+
+        public void CloseTab(object tab)
+        {
+             Contents.Remove(tab as TabContentViewModel);
         }
     }
 }

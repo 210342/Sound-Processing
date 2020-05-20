@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using ViewModels.Model;
 
 namespace ViewModels.Controllers
 {
@@ -11,6 +12,6 @@ namespace ViewModels.Controllers
         bool CanSaveSoundFile();
         Task SaveSoundFile();
         bool CanOpenSoundFile();
-        Task<IWave> OpenSoundFile();
+        Task<TitledObject<IWave>> OpenSoundFile();
     }
 }

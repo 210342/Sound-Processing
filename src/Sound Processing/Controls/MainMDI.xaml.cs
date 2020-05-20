@@ -21,10 +21,17 @@ namespace SoundProcessing.Controls
 {
     public sealed partial class MainMDI : UserControl
     {
+        public MainMDIViewModel ViewModel => DataContext as MainMDIViewModel;
+
         public MainMDI()
         {
             DataContext = ViewModelLocator.Container.Value.GetViewModel<MainMDIViewModel>();
             this.InitializeComponent();
+        }
+
+        private void MdiArea_TabCloseRequested(muxc.TabView sender, muxc.TabViewTabCloseRequestedEventArgs args)
+        {
+            ViewModel.CloseTab(args.Tab.DataContext);
         }
     }
 }

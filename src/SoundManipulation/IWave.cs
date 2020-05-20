@@ -13,10 +13,11 @@ namespace SoundManipulation
         IEnumerable<double> Imaginary { get; }
         IEnumerable<double> Magnitude { get; }
         IEnumerable<double> Phase { get; }
+        int SamplesCount { get; }
         decimal SamplePeriod { get; }
         decimal SampleRate { get; }
-        decimal Frequency { get; }
-        decimal Period { get; }
+        decimal? Frequency { get; }
+        decimal? Period { get; }
         IWave FourierTransform { get; }
 
         IWave Calculate(IWave other, Func<Complex, Complex, Complex> operation);

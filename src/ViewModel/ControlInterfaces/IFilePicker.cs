@@ -8,6 +8,8 @@ namespace ViewModels.ControlInterfaces
 {
     public interface IFilePicker
     {
+        string Path { get; }
+        string Name { get; }
         Task<bool> OpenDialogAsync();
         Task<Stream> GetFileStreamAsync();
     }

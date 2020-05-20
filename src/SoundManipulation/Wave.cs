@@ -12,7 +12,6 @@ namespace SoundManipulation
 {
     public class Wave : IWave
     {
-        private decimal? _period;
         private IWave _fourierTransform;
         private readonly Complex[] _samples;
         protected static readonly double EPSILON = 1E-6;
@@ -22,20 +21,12 @@ namespace SoundManipulation
         public IEnumerable<double> Imaginary => Samples.Select(c => c.Imaginary);
         public IEnumerable<double> Magnitude => Samples.Select(c => c.Magnitude);
         public IEnumerable<double> Phase => Samples.Select(c => c.Phase);
+        public int SamplesCount { get; }
         public decimal SamplePeriod { get; }
         public decimal SampleRate => 1 / SamplePeriod;
-        public decimal Frequency => 1 / Period;
-        public decimal Period
-        {
-            get
-            {
-                if (!_period.HasValue)
-                {
-                    _period = AMDF();
-                }
-                return _period.Value;
-            }
-        }
+        public decimal? Frequency => 1 / Period;
+        public decimal? Period { get; private set; }
+
         public IWave FourierTransform
         {
             get
@@ -51,12 +42,14 @@ namespace SoundManipulation
         public Wave(IEnumerable<Complex> samples, decimal samplePeriod)
         {
             _samples = samples.ToArray();
+            SamplesCount = _samples.Count();
             SamplePeriod = samplePeriod;
         }
 
         public Wave(IEnumerable<double> samples, decimal samplePeriod)
         {
             _samples = samples.Select(x => new Complex(x, 0)).ToArray();
+            SamplesCount = _samples.Count();
             SamplePeriod = samplePeriod;
         }
 
@@ -91,7 +84,8 @@ namespace SoundManipulation
                     minimumIndex = m;
                 }
             }
-            return minimumIndex.Value * SamplePeriod;
+            Period = minimumIndex.Value * SamplePeriod;
+            return Period ?? decimal.Zero;
         }
 
         public IWave CalculateFourierTransform()

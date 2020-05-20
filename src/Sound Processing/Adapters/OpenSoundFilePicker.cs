@@ -16,7 +16,8 @@ namespace SoundProcessing.Adapters
         private readonly FileOpenPicker _picker;
         private StorageFile _file;
 
-        public bool FileExists { get; private set; }
+        public string Path => _file?.Path ?? string.Empty;
+        public string Name => _file?.DisplayName ?? string.Empty;
 
         public OpenSoundFilePicker()
         {

@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using ViewModels.ControlInterfaces;
+using ViewModels.Model;
 
 namespace ViewModels.Controllers
 {
@@ -22,7 +23,7 @@ namespace ViewModels.Controllers
         public bool CanSaveSoundFile() => _saveFileDialog != null;
         public async Task SaveSoundFile() { await Task.CompletedTask; }
         public bool CanOpenSoundFile() => _openFileDialog != null;
-        public async Task<IWave> OpenSoundFile()
+        public async Task<TitledObject<IWave>> OpenSoundFile()
         {
             if (!CanOpenSoundFile())
             {
@@ -35,7 +36,7 @@ namespace ViewModels.Controllers
             }
             using (Stream stream = await _openFileDialog.GetFileStreamAsync())
             {
-                return await Wave.ReadFromStreamAsync(stream);
+                return new TitledObject<IWave>(await Wave.ReadFromStreamAsync(stream), _openFileDialog.Name);
             }
         }
     }

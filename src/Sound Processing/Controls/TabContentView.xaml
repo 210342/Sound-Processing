@@ -5,12 +5,37 @@
     xmlns:local="using:SoundProcessing.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:ViewModels"
     mc:Ignorable="d"
+    Foreground="White"
     d:DesignHeight="300"
     d:DesignWidth="400">
 
     <Grid>
-        <TextBlock HorizontalAlignment="Center" Margin="0,0,0,0" Text="{Binding Wave.SamplePeriod}" TextWrapping="Wrap" VerticalAlignment="Center" Foreground="White"/>
-
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="19*"/>
+        </Grid.RowDefinitions>
+        <RelativePanel x:Name="InfoPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="8,4,8,4">
+            <RelativePanel.Resources>
+                <Style TargetType="Viewbox">
+                    <Setter Property="Margin" Value="8,0,8,0" />
+                </Style>
+            </RelativePanel.Resources>
+            <Viewbox x:Name="SampleRateLabelViewBox" RelativePanel.AlignLeftWithPanel="True">
+                <TextBlock x:Name="SampleRateLabel" Text="Sample rate: " VerticalAlignment="Stretch" />
+            </Viewbox>
+            <Viewbox x:Name="SampleRateViewBox" RelativePanel.RightOf="SampleRateLabelViewBox">
+                <TextBlock x:Name="SampleRate" Text="{Binding Wave.Value.SampleRate}"  />
+            </Viewbox>
+            <Viewbox x:Name="PeriodLabelViewBox" RelativePanel.RightOf="SampleRateViewBox">
+                <TextBlock x:Name="PeriodLabel" Text="Period: " VerticalAlignment="Stretch" />
+            </Viewbox>
+            <Viewbox x:Name="PeriodViewBox" RelativePanel.RightOf="PeriodLabelViewBox">
+                <TextBlock  x:Name="Period" Text="{Binding Wave.Value.Period}"  />
+            </Viewbox>
+            <ToggleSwitch x:Name="ComplexSwitch"  Margin="8,0,0,0" FlowDirection="RightToLeft" IsOn="{Binding IsUsingAmplitudeAndPhase}" VerticalAlignment="Stretch"
+                          OffContent="Use real and imaginary" OnContent="Use real and imaginary" RelativePanel.AlignRightWithPanel="True"/>
+        </RelativePanel>
     </Grid>
 </UserControl>

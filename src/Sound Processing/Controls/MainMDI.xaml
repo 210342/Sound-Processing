@@ -11,14 +11,23 @@
     d:DesignHeight="600"
     d:DesignWidth="900">
 
-    <Grid>
-        <muxc:TabView x:Name="MdiArea" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" AllowDropTabs="False" 
-                      IsAddTabButtonVisible="False" TabItemsSource="{Binding Contents, Mode=OneWay}">
-            <muxc:TabView.TabItemTemplate>
-                <DataTemplate x:DataType="vm:TabContentViewModel">
+    <UserControl.Resources>
+        <DataTemplate x:Key="TabContent" x:DataType="vm:TabContentViewModel">
+            <muxc:TabViewItem>
+                <muxc:TabViewItem.Content>
                     <local:TabContentView />
-                </DataTemplate>
-            </muxc:TabView.TabItemTemplate>
+                </muxc:TabViewItem.Content>
+                <muxc:TabViewItem.Header>
+                    <TextBlock Text="{Binding Wave.Title, Mode=OneTime}" HorizontalAlignment="Center" Foreground="White"/>
+                </muxc:TabViewItem.Header>
+            </muxc:TabViewItem>
+        </DataTemplate>
+    </UserControl.Resources>
+    
+    <Grid>
+        <muxc:TabView x:Name="MdiArea" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                      IsAddTabButtonVisible="False" TabItemsSource="{Binding Contents, Mode=TwoWay}" SelectedItem="{Binding SelectedTab, Mode=TwoWay}"
+                      TabItemTemplate="{StaticResource TabContent}" TabCloseRequested="MdiArea_TabCloseRequested">
         </muxc:TabView>
     </Grid>
 </UserControl>

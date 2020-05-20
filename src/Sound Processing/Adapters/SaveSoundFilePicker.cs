@@ -15,6 +15,9 @@ namespace SoundProcessing.Adapters
         private readonly FileSavePicker _picker;
         private StorageFile _file;
 
+        public string Path => _file?.Path ?? string.Empty;
+        public string Name => _file?.DisplayName ?? string.Empty;
+
         public SaveSoundFilePicker()
         {
             _picker = new FileSavePicker
