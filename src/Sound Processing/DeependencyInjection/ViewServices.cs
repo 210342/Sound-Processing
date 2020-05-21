@@ -6,8 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ViewModels.ControlInterfaces;
+using Windows.UI.Xaml;
 
-namespace SoundProcessing
+namespace SoundProcessing.DependencyInjection
 {
     public class ViewServices : NinjectModule
     {

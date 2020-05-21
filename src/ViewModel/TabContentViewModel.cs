@@ -26,29 +26,31 @@ namespace ViewModels
             set
             {
                 _wave = value;
+                GenerateCharts(_wave.Value);
                 OnPropertyChanged();
             }
         }
 
-        private bool _isUsingAmplitudeAndPhase = false;
-        public bool IsUsingAmplitudeAndPhase
+        private bool _isUsingRealAndImaginary = true;
+        public bool IsUsingRealAndImaginary
         {
-            get { return _isUsingAmplitudeAndPhase; }
+            get { return _isUsingRealAndImaginary; }
             set
             {
-                _isUsingAmplitudeAndPhase = value;
+                _isUsingRealAndImaginary = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(TopChart));
                 OnPropertyChanged(nameof(BottomChart));
             }
         }
 
-        public IDictionary<string, ChartData> Charts { get; } = new Dictionary<string, ChartData>();
-
-        public ChartData TopChart => Charts[IsUsingAmplitudeAndPhase ? MAGNITUDE : REAL];
-        public ChartData BottomChart => Charts[IsUsingAmplitudeAndPhase ? PHASE : IMAGINARY];
+        public ChartData TopChart => Charts[IsUsingRealAndImaginary ? REAL : MAGNITUDE];
+        public ChartData BottomChart => Charts[IsUsingRealAndImaginary ? IMAGINARY : PHASE];
 
         #endregion
+
+        public IDictionary<string, ChartData> Charts { get; } = new Dictionary<string, ChartData>();
+        public IEnumerable<double> Tmp { get; } = new double[] { 0, 2, 1, 8, 6, 4, 5 };
 
         public TabContentViewModel() 
         {
@@ -74,7 +76,7 @@ namespace ViewModels
         {
             IEnumerable<double> horizontal = Enumerable
                 .Range(0, wave.SamplesCount)
-                .Select(i => i * decimal.ToDouble(wave.SamplePeriod));
+                .Select(i => (double)i);
             Charts.Add(REAL, new ChartData(horizontal, wave.Real));
             Charts.Add(IMAGINARY, new ChartData(horizontal, wave.Imaginary));
             Charts.Add(MAGNITUDE, new ChartData(horizontal, wave.Magnitude));

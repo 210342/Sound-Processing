@@ -37,6 +37,7 @@ namespace ViewModels
 
         public MainMDIViewModel(IIOSoundController controller)
         {
+            Name = nameof(MainMDIViewModel);
             IOController = controller;
         }
 
@@ -48,14 +49,54 @@ namespace ViewModels
         public async Task OpenSoundFile()
         {
             TitledObject<IWave> wave = await IOController?.OpenSoundFile();
-            TabContentViewModel newContent = new TabContentViewModel(wave);
-            Contents.Add(newContent);
-            SelectedTab = newContent;
+            SelectedTab = AddTab(wave);
         }
 
         public void CloseTab(object tab)
         {
              Contents.Remove(tab as TabContentViewModel);
+        }
+
+        public async Task CalculatePeriodWithAMDF() => 
+            await Task.Run(() => SelectedTab?.Wave?.Value?.AMDF());
+
+        public async Task CalculatePeriodWithCepstralAnalysis() => await Task.Run(() =>
+        {
+            if (SelectedTab is null)
+            {
+                return;
+            }
+
+            SelectedTab.Wave.Value.CepstralAnalysis();
+            AddTab(new TitledObject<IWave>(
+                SelectedTab.Wave.Value.FourierTransform,
+                $"{SelectedTab.Wave.Title} - Fourier"
+            ));
+            AddTab(new TitledObject<IWave>(
+                SelectedTab.Wave.Value.FourierTransform.FourierTransform,
+                $"{SelectedTab.Wave.Title} - Fourier - Fourier"
+            ));
+        });
+
+        public async Task CalculateFourierTransform() => await Task.Run(() =>
+        {
+            if (SelectedTab is null)
+            {
+                return;
+            }
+
+            SelectedTab = AddTab(new TitledObject<IWave>(
+                SelectedTab.Wave.Value.FourierTransform,
+                $"{SelectedTab.Wave.Title} - Fourier"
+            ));
+        }
+        );
+
+        private TabContentViewModel AddTab(TitledObject<IWave> wave)
+        {
+            TabContentViewModel newContent = new TabContentViewModel(wave);
+            Contents.Add(newContent);
+            return newContent;
         }
     }
 }

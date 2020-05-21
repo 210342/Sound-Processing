@@ -88,6 +88,13 @@ namespace SoundManipulation
             return Period ?? decimal.Zero;
         }
 
+        public decimal CepstralAnalysis()
+        {
+            IWave cepstral = FourierTransform.FourierTransform;
+            Period = Convert.ToDecimal(cepstral.Magnitude.Aggregate((x1, x2) => x1 > x2 ? x1 : x2));
+            return Period ?? decimal.Zero;
+        }
+
         public IWave CalculateFourierTransform()
         {
             Complex[] newArray = ExtendSamplesToLengthOfPowerTwo();

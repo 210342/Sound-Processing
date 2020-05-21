@@ -20,10 +20,16 @@ namespace SoundProcessing.Controls
 {
     public sealed partial class TabContentView : UserControl
     {
+        public TabContentViewModel ViewModel => DataContext as TabContentViewModel;
+
         public TabContentView()
         {
-            DataContext = ViewModelLocator.Container.Value.GetViewModel<TabContentViewModel>();
             this.InitializeComponent();
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            int a = 0;
         }
     }
 }

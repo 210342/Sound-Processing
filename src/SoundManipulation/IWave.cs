@@ -28,5 +28,6 @@ namespace SoundManipulation
         IWave CalculateFourierTransform();
         IWave CalculateInverseFourierTransform();
         decimal AMDF();
+        decimal CepstralAnalysis();
     }
 }

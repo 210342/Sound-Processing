@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Text;
 
 namespace ViewModels.Model
 {
     public class ChartData
     {
-        public IEnumerable<double> HorizontalAxis { get; set; }
-        public IEnumerable<double> VerticalAxis { get; set; }
+        public IEnumerable<ChartDataPoint> DataPoints { get; }
+        public IEnumerable<double> X { get; }
+        public IEnumerable<double> Y { get; }
 
-        public ChartData(IEnumerable<double> horizontal, IEnumerable<double> vertical)
+        public ChartData(IEnumerable<double> horizontal, IEnumerable<double> values)
         {
-            HorizontalAxis = horizontal;
-            VerticalAxis = vertical;
+            X = horizontal;
+            Y = values;
+            DataPoints = horizontal.Zip(values, (x, y) => new ChartDataPoint(x, y));
         }
     }
 }

@@ -14,6 +14,9 @@ namespace ViewModels
         public MainMDIViewModel MainMDIViewModel { get; }
         public ICommand OpenCommand { get; }
         public ICommand SaveCommand { get; }
+        public ICommand AMDFCommand { get; }
+        public ICommand CepstralCommand { get; }
+        public ICommand FourierCommand { get; }
 
         public ToolbarsViewModel(MainMDIViewModel mdi)
         {
@@ -21,10 +24,19 @@ namespace ViewModels
             MainMDIViewModel = mdi;
             OpenCommand = new AsyncCommand(Open);
             SaveCommand = new AsyncCommand(Save);
+            AMDFCommand = new AsyncCommand(AMDF);
+            CepstralCommand = new AsyncCommand(Cepstral);
+            FourierCommand = new AsyncCommand(Fourier);
         }
 
         public Task Open() => MainMDIViewModel?.OpenSoundFile();
 
         public Task Save() => MainMDIViewModel?.SaveCurrentSound();
+
+        public Task AMDF() => MainMDIViewModel?.CalculatePeriodWithAMDF();
+
+        public Task Cepstral() => MainMDIViewModel?.CalculatePeriodWithCepstralAnalysis();
+
+        public Task Fourier() => MainMDIViewModel?.CalculateFourierTransform();
     }
 }

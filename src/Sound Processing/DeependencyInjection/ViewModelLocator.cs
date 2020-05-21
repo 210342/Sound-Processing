@@ -6,12 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ViewModels;
+using ViewModels.DependencyInjection;
 
-namespace SoundProcessing
+namespace SoundProcessing.DependencyInjection
 {
-    public class ViewModelLocator
+    public class ViewModelLocator 
     {
-        public static Lazy<ViewModelLocator> Container { get; set; } = 
+        public static Lazy<ViewModelLocator> Container { get; set; } =
             new Lazy<ViewModelLocator>(() => new ViewModelLocator(), true);
 
         private readonly IKernel _kernel;

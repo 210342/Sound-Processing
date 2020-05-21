@@ -29,10 +29,10 @@
             <CommandBar.Content>
                 <Grid/>
             </CommandBar.Content>
-            <AppBarButton Icon="Calculator" Label="Fourier transform" VerticalAlignment="Stretch" Foreground="White" />
+            <AppBarButton Icon="Calculator" Label="Fourier transform" VerticalAlignment="Stretch" Foreground="White" Command="{Binding FourierCommand}" />
             <AppBarSeparator Foreground="White"/>
-            <AppBarButton Icon="FourBars" Label="Cepstral analysis" VerticalAlignment="Stretch" Foreground="White"/>
-            <AppBarButton Icon="Rotate" Label="AMDF" VerticalAlignment="Stretch" Foreground="White" />
+            <AppBarButton Icon="FourBars" Label="Cepstral analysis" VerticalAlignment="Stretch" Foreground="White" Command="{Binding CepstralCommand}"/>
+            <AppBarButton Icon="Rotate" Label="AMDF" VerticalAlignment="Stretch" Foreground="White" Command="{Binding AMDFCommand}"/>
         </CommandBar>
         <ProgressRing x:Name="ProgressIndicator" Grid.Row="0" Grid.Column="1" Height="20" Width="20"/>
     </Grid>
