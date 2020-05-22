@@ -116,6 +116,7 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Adapters\Dispatcher.cs" />
     <Compile Include="Adapters\SaveSoundFilePicker.cs" />
     <Compile Include="Adapters\OpenSoundFilePicker.cs" />
     <Compile Include="App.xaml.cs">

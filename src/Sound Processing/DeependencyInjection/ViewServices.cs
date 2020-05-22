@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ViewModels.ControlInterfaces;
+using ViewModels.DependencyInjection;
 using Windows.UI.Xaml;
 
 namespace SoundProcessing.DependencyInjection
@@ -16,6 +17,7 @@ namespace SoundProcessing.DependencyInjection
         {
             Bind<ISaveFilePicker>().To<SaveSoundFilePicker>();
             Bind<IOpenFilePicker>().To<OpenSoundFilePicker>();
+            Bind<IDispatcher>().To<Dispatcher>().InSingletonScope();
         }
     }
 }

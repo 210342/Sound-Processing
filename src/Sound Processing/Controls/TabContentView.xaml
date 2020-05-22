@@ -21,7 +21,10 @@
         <RelativePanel x:Name="InfoPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="8,4,8,4">
             <RelativePanel.Resources>
                 <Style TargetType="Viewbox">
-                    <Setter Property="Margin" Value="8,0,8,0" />
+                    <Setter Property="Margin" Value="12,0,12,0" />
+                </Style>
+                <Style TargetType="ToggleSwitch">
+                    <Setter Property="Foreground" Value="White" />
                 </Style>
             </RelativePanel.Resources>
             <Viewbox x:Name="SampleRateLabelViewBox" RelativePanel.AlignLeftWithPanel="True">
@@ -29,47 +32,21 @@
             </Viewbox>
             <Viewbox x:Name="SampleRateViewBox" RelativePanel.RightOf="SampleRateLabelViewBox">
                 <TextBlock x:Name="SampleRate" 
-                           Text="{Binding Wave.Value.SampleRate, Converter={StaticResource StringFormatter}, ConverterParameter='\{0:N2\} Hz'}" />
+                           Text="{Binding Wave.Value.SampleRate, Converter={StaticResource StringFormatter}, ConverterParameter='\{0:N2\} Hz', Mode=OneTime}" />
             </Viewbox>
-            <Viewbox x:Name="PeriodLabelViewBox" RelativePanel.RightOf="SampleRateViewBox">
-                <TextBlock x:Name="PeriodLabel" Text="Period: " VerticalAlignment="Stretch" />
+            <Viewbox x:Name="BaseFrequencyLabelViewBox" RelativePanel.RightOf="SampleRateViewBox">
+                <TextBlock x:Name="BaseFrequencyLabel" Text="Base Frequency: " VerticalAlignment="Stretch" />
             </Viewbox>
-            <Viewbox x:Name="PeriodViewBox" RelativePanel.RightOf="PeriodLabelViewBox">
-                <TextBlock  x:Name="Period" Text="{Binding Wave.Value.Period, Mode=OneWay}" />
+            <Viewbox x:Name="BaseFrequencyViewBox" RelativePanel.RightOf="BaseFrequencyLabelViewBox">
+                <TextBlock  x:Name="BaseFrequency" Text="{Binding Wave.Value.Frequency, Mode=OneWay,  Converter={StaticResource StringFormatter}, 
+                    ConverterParameter='\{0:N3\} Hz',UpdateSourceTrigger=PropertyChanged}" />
             </Viewbox>
-            <ToggleSwitch x:Name="ComplexSwitch"  Margin="8,0,0,0" FlowDirection="RightToLeft" IsOn="{Binding IsUsingAmplitudeAndPhase, Mode=TwoWay}" VerticalAlignment="Stretch"
-                          OffContent="Use real and imaginary" OnContent="Use real and imaginary" RelativePanel.AlignRightWithPanel="True"/>
-            <Button Content="Debug" RelativePanel.LeftOf="ComplexSwitch" Click="Button_Click"/>
+            <Viewbox x:Name="ComplexSwitchBox" RelativePanel.AlignRightWithPanel="True">
+                <ToggleSwitch x:Name="ComplexSwitch"  Margin="8,0,0,0" FlowDirection="RightToLeft" IsOn="{Binding IsUsingRealAndImaginary, 
+                    Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    VerticalAlignment="Stretch" OffContent="Use real and imaginary" OnContent="Use real and imaginary" />
+            </Viewbox>
+            <Button Content="Debug" RelativePanel.LeftOf="ComplexSwitchBox"  Click="Button_Click"/>
         </RelativePanel>
-        <telerik:RadCartesianChart x:Name="TopChart" HorizontalAlignment="Stretch" Margin="4,4,4,8" Grid.Row="1" VerticalAlignment="Stretch">
-            <telerik:RadCartesianChart.HorizontalAxis>
-                <telerik:LinearAxis/>
-            </telerik:RadCartesianChart.HorizontalAxis>
-            <telerik:RadCartesianChart.VerticalAxis>
-                <telerik:LinearAxis/>
-            </telerik:RadCartesianChart.VerticalAxis>
-            <telerik:ScatterLineSeries ItemsSource="{Binding Tmp}" Width="5" Foreground="White" />
-        </telerik:RadCartesianChart>
-        <telerik:RadCartesianChart x:Name="BottomChart" HorizontalAlignment="Stretch" Margin="4,8,4,4" Grid.Row="2" VerticalAlignment="Stretch">
-            <telerik:RadCartesianChart.HorizontalAxis>
-                <telerik:LinearAxis/>
-            </telerik:RadCartesianChart.HorizontalAxis>
-            <telerik:RadCartesianChart.VerticalAxis>
-                <telerik:LinearAxis/>
-            </telerik:RadCartesianChart.VerticalAxis>
-            <telerik:RadCartesianChart.Series>
-                <telerik:StepLineSeries ItemsSource="{Binding BottomChart.DataPoints}" Stroke="Beige">
-                    <telerik:StepLineSeries.CategoryBinding>
-                        <telerik:PropertyNameDataPointBinding PropertyName="X"/>
-                    </telerik:StepLineSeries.CategoryBinding>
-                    <telerik:StepLineSeries.ValueBinding>
-                        <telerik:PropertyNameDataPointBinding PropertyName="Y"/>
-                    </telerik:StepLineSeries.ValueBinding>
-                </telerik:StepLineSeries>
-            </telerik:RadCartesianChart.Series>
-            <telerik:RadCartesianChart.Behaviors>
-                <telerik:ChartPanAndZoomBehavior ZoomMode="Both" PanMode="Both" />
-            </telerik:RadCartesianChart.Behaviors>
-        </telerik:RadCartesianChart>
     </Grid>
 </UserControl>

@@ -50,7 +50,6 @@ namespace ViewModels
         #endregion
 
         public IDictionary<string, ChartData> Charts { get; } = new Dictionary<string, ChartData>();
-        public IEnumerable<double> Tmp { get; } = new double[] { 0, 2, 1, 8, 6, 4, 5 };
 
         public TabContentViewModel() 
         {

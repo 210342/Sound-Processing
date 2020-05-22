@@ -7,15 +7,20 @@ using System.Numerics;
 using NAudio.Wave;
 using System.IO;
 using System.Threading.Tasks;
+using System.ComponentModel;
+using MathNet.Numerics;
 
 namespace SoundManipulation
 {
-    public class Wave : IWave
+    public class Wave : IWave, INotifyPropertyChanged
     {
         private IWave _fourierTransform;
         private readonly Complex[] _samples;
         protected static readonly double EPSILON = 1E-6;
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #region Properties
         public IEnumerable<Complex> Samples => _samples;
         public IEnumerable<double> Real => Samples.Select(c => c.Real);
         public IEnumerable<double> Imaginary => Samples.Select(c => c.Imaginary);
@@ -25,7 +30,6 @@ namespace SoundManipulation
         public decimal SamplePeriod { get; }
         public decimal SampleRate => 1 / SamplePeriod;
         public decimal? Frequency => 1 / Period;
-        public decimal? Period { get; private set; }
 
         public IWave FourierTransform
         {
@@ -38,6 +42,24 @@ namespace SoundManipulation
                 return _fourierTransform;
             }
         }
+
+        #endregion
+
+        #region Observable properties
+
+        private decimal? _period;
+        public decimal? Period 
+        { 
+            get { return _period; }
+            set
+            {
+                _period = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Period)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Frequency)));
+            }
+        }
+
+        #endregion
 
         public Wave(IEnumerable<Complex> samples, decimal samplePeriod)
         {
@@ -65,12 +87,12 @@ namespace SoundManipulation
         public IWave Concatenate(IWave other) =>
             new Wave(Samples.Concat(other.Samples), SamplePeriod);
 
-        public decimal AMDF()
+        public decimal? AMDF(double accuracy)
         {
             double[] delayedArray = new double[_samples.Length];
             delayedArray[0] = 0;
-            int? minimumIndex = null;
-            for (int m = 1; m < _samples.Length; ++m)
+            delayedArray[1] = 1;
+            for (int m = 2; m < _samples.Length; ++m)
             {
                 double sum = 0;
                 for (int i = 0; i < _samples.Length; ++i)
@@ -79,20 +101,20 @@ namespace SoundManipulation
                     sum += Complex.Abs(_samples[i] - delayed);
                 }
                 delayedArray[m] = sum;
-                if (!minimumIndex.HasValue || delayedArray[minimumIndex.Value] < sum)
+                if (delayedArray[m - 2] - delayedArray[m - 1] > accuracy * delayedArray[m - 2]
+                    && delayedArray[m] - delayedArray[m - 1] > accuracy * delayedArray[m-1])
                 {
-                    minimumIndex = m;
+                    return (m - 1) * SamplePeriod;
                 }
             }
-            Period = minimumIndex.Value * SamplePeriod;
-            return Period ?? decimal.Zero;
+            return null;
         }
 
-        public decimal CepstralAnalysis()
+        public decimal? CepstralAnalysis()
         {
             IWave cepstral = FourierTransform.FourierTransform;
-            Period = Convert.ToDecimal(cepstral.Magnitude.Aggregate((x1, x2) => x1 > x2 ? x1 : x2));
-            return Period ?? decimal.Zero;
+            decimal period = Convert.ToDecimal(cepstral.Magnitude.Aggregate((x1, x2) => x1 > x2 ? x1 : x2));
+            return period;
         }
 
         public IWave CalculateFourierTransform()

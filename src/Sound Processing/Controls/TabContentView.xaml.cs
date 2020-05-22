@@ -21,6 +21,7 @@ namespace SoundProcessing.Controls
     public sealed partial class TabContentView : UserControl
     {
         public TabContentViewModel ViewModel => DataContext as TabContentViewModel;
+        public IEnumerable<double> Tmp { get; } = new double[] { 0, 2, 1, 8, 6, 4, 5 };
 
         public TabContentView()
         {

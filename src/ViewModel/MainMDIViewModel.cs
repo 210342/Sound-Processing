@@ -57,17 +57,32 @@ namespace ViewModels
              Contents.Remove(tab as TabContentViewModel);
         }
 
-        public async Task CalculatePeriodWithAMDF() => 
-            await Task.Run(() => SelectedTab?.Wave?.Value?.AMDF());
-
-        public async Task CalculatePeriodWithCepstralAnalysis() => await Task.Run(() =>
+        public async Task CalculatePeriodWithAMDF(double accuracy)
         {
             if (SelectedTab is null)
             {
                 return;
             }
 
-            SelectedTab.Wave.Value.CepstralAnalysis();
+            decimal? period =
+                await Task.Run(() => SelectedTab?.Wave?.Value?.AMDF(accuracy));
+
+            if (period.HasValue)
+            {
+                SelectedTab.Wave.Value.Period = period;
+            }
+        }
+
+        public async Task CalculatePeriodWithCepstralAnalysis() 
+        {
+            if (SelectedTab is null)
+            {
+                return;
+            }
+
+            SelectedTab.Wave.Value.Period = 
+                await Task.Run(() => SelectedTab.Wave.Value.CepstralAnalysis());
+            
             AddTab(new TitledObject<IWave>(
                 SelectedTab.Wave.Value.FourierTransform,
                 $"{SelectedTab.Wave.Title} - Fourier"
@@ -76,21 +91,21 @@ namespace ViewModels
                 SelectedTab.Wave.Value.FourierTransform.FourierTransform,
                 $"{SelectedTab.Wave.Title} - Fourier - Fourier"
             ));
-        });
+        }
 
-        public async Task CalculateFourierTransform() => await Task.Run(() =>
+        public async Task CalculateFourierTransform()
         {
             if (SelectedTab is null)
             {
                 return;
             }
 
+            IWave newWave = await Task.Run(() => SelectedTab.Wave.Value.FourierTransform);
             SelectedTab = AddTab(new TitledObject<IWave>(
-                SelectedTab.Wave.Value.FourierTransform,
+                newWave,
                 $"{SelectedTab.Wave.Title} - Fourier"
             ));
         }
-        );
 
         private TabContentViewModel AddTab(TitledObject<IWave> wave)
         {
