@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace SoundManipulation
 {
-    public interface IWave
+    public interface IWave : INotifyPropertyChanged
     {
         IEnumerable<Complex> Samples { get; }
         IEnumerable<double> Real { get; }

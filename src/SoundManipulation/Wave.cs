@@ -12,7 +12,7 @@ using MathNet.Numerics;
 
 namespace SoundManipulation
 {
-    public class Wave : IWave, INotifyPropertyChanged
+    public class Wave : IWave
     {
         private IWave _fourierTransform;
         private readonly Complex[] _samples;
@@ -119,14 +119,14 @@ namespace SoundManipulation
 
         public IWave CalculateFourierTransform()
         {
-            Complex[] newArray = ExtendSamplesToLengthOfPowerTwo();
+            Complex[] newArray = ExtendSamplesToLengthOfPowerOfTwo();
             Fourier.Forward(newArray);
-            return new Wave(newArray, SamplePeriod);
+            return new Wave(newArray.Take(newArray.Length / 2), SamplePeriod);
         }
 
         public IWave CalculateInverseFourierTransform()
         {
-            Complex[] newArray = ExtendSamplesToLengthOfPowerTwo();
+            Complex[] newArray = ExtendSamplesToLengthOfPowerOfTwo();
             Fourier.Inverse(newArray);
             return new Wave(newArray, SamplePeriod);
         }
@@ -163,7 +163,7 @@ namespace SoundManipulation
             return exponent - (int)exponent < EPSILON ? (int)exponent : (int)(Math.Ceiling(exponent) + 0.01);
         }
 
-        protected internal Complex[] ExtendSamplesToLengthOfPowerTwo()
+        protected internal Complex[] ExtendSamplesToLengthOfPowerOfTwo()
         {
             int integerExponent = GetCeilingPowerExponent();
             return Samples

@@ -3,16 +3,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using ViewModels.DependencyInjection;
 using ViewModels.Model;
 
 namespace ViewModels
 {
     public class TabContentViewModel : ViewModel
     {
+        private readonly IDispatcher _dispatcher;
+
         #region ChartKeys
 
         private static readonly string REAL = "Real";
-        private static readonly string IMAGINARY = "Imag";
+        private static readonly string IMAGINARY = "Imaginary";
         private static readonly string MAGNITUDE = "Magnitude";
         private static readonly string PHASE = "Phase";
 
@@ -66,20 +70,35 @@ namespace ViewModels
             Wave = new TitledObject<IWave>(wave, title);
         }
 
-        public TabContentViewModel(TitledObject<IWave> wave) : this()
+        public TabContentViewModel(TitledObject<IWave> wave, IDispatcher dispatcher) : this()
         {
+            _dispatcher = dispatcher;
             Wave = wave;
+            wave.Value.PropertyChanged += (sender, args) => FrequencyChanged(args.PropertyName);
         }
 
-        private void GenerateCharts(IWave wave)
+        private void GenerateCharts(IWave wave) => GenerateCharts(wave, (int)wave.SampleRate);
+
+        private void GenerateCharts(IWave wave, int maxSamplesCount)
         {
             IEnumerable<double> horizontal = Enumerable
-                .Range(0, wave.SamplesCount)
+                .Range(0, maxSamplesCount)
                 .Select(i => (double)i);
-            Charts.Add(REAL, new ChartData(horizontal, wave.Real));
-            Charts.Add(IMAGINARY, new ChartData(horizontal, wave.Imaginary));
-            Charts.Add(MAGNITUDE, new ChartData(horizontal, wave.Magnitude));
-            Charts.Add(PHASE, new ChartData(horizontal, wave.Phase));
+            Charts[REAL] = new ChartData(horizontal, wave.Real.Take(maxSamplesCount), REAL);
+            Charts[IMAGINARY] = new ChartData(horizontal, wave.Imaginary.Take(maxSamplesCount), IMAGINARY);
+            Charts[MAGNITUDE] = new ChartData(horizontal, wave.Magnitude.Take(maxSamplesCount), MAGNITUDE);
+            Charts[PHASE] = new ChartData(horizontal, wave.Phase.Take(maxSamplesCount), PHASE);
+            OnPropertyChanged(nameof(TopChart));
+            OnPropertyChanged(nameof(BottomChart));
+        }
+
+        private void FrequencyChanged(string property)
+        {
+            if (property.Equals(nameof(Wave.Value.Frequency)))
+            {
+                _dispatcher.RunAsync(() => Task.Run(() => 
+                    GenerateCharts(Wave.Value, (int)(Wave.Value.Period / Wave.Value.SamplePeriod) + 1)));
+            }
         }
     }
 }

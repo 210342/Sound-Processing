@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:ViewModels"
-    xmlns:telerik="using:Telerik.UI.Xaml.Controls.Chart"
+    xmlns:qc="using:Ailon.QuickCharts"
     x:Class="SoundProcessing.Controls.TabContentView"
     mc:Ignorable="d"
     Foreground="White"
@@ -42,11 +42,25 @@
                     ConverterParameter='\{0:N3\} Hz',UpdateSourceTrigger=PropertyChanged}" />
             </Viewbox>
             <Viewbox x:Name="ComplexSwitchBox" RelativePanel.AlignRightWithPanel="True">
-                <ToggleSwitch x:Name="ComplexSwitch"  Margin="8,0,0,0" FlowDirection="RightToLeft" IsOn="{Binding IsUsingRealAndImaginary, 
-                    Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    VerticalAlignment="Stretch" OffContent="Use real and imaginary" OnContent="Use real and imaginary" />
+                <ToggleSwitch x:Name="ComplexSwitch"  Margin="8,0,0,0" FlowDirection="RightToLeft" 
+                              IsOn="{Binding IsUsingRealAndImaginary, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              VerticalAlignment="Stretch" OffContent="Use real and imaginary" OnContent="Use real and imaginary" />
             </Viewbox>
-            <Button Content="Debug" RelativePanel.LeftOf="ComplexSwitchBox"  Click="Button_Click"/>
+            <Viewbox RelativePanel.LeftOf="ComplexSwitchBox" VerticalAlignment="Stretch">
+                <Button Content="Debug" Click="Button_Click" VerticalAlignment="Center"/>
+            </Viewbox>
         </RelativePanel>
+        <qc:SerialChart Grid.Row="1"  DataSource="{Binding TopChart.DataPoints}" CategoryValueMemberPath="X" Margin="16,16,16,16"
+                        MinimumCategoryGridStep="400" AxisForeground="White" PlotAreaBackground="Black" MinimumValueGridStep="32" >
+            <qc:SerialChart.Graphs>
+                <qc:LineGraph Title="{Binding TopChart.SeriesTitle}" ValueMemberPath="Y" Brush="Green" />
+            </qc:SerialChart.Graphs>
+        </qc:SerialChart>
+        <qc:SerialChart Grid.Row="2"  DataSource="{Binding BottomChart.DataPoints}" CategoryValueMemberPath="X" Margin="16,16,16,16"
+                        MinimumCategoryGridStep="400" AxisForeground="White" PlotAreaBackground="Black" MinimumValueGridStep="32">
+            <qc:SerialChart.Graphs>
+                <qc:LineGraph Title="{Binding BottomChart.SeriesTitle}" ValueMemberPath="Y" Foreground="White" Brush="Red" />
+            </qc:SerialChart.Graphs>
+        </qc:SerialChart>
     </Grid>
 </UserControl>

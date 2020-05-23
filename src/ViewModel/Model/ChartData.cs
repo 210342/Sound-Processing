@@ -6,16 +6,26 @@ using System.Text;
 
 namespace ViewModels.Model
 {
-    public class ChartData
+    public class ChartData : INotifyPropertyChanged
     {
         public IEnumerable<ChartDataPoint> DataPoints { get; }
-        public IEnumerable<double> X { get; }
-        public IEnumerable<double> Y { get; }
 
-        public ChartData(IEnumerable<double> horizontal, IEnumerable<double> values)
+        private string _seriesTitle = string.Empty;
+        public string SeriesTitle
         {
-            X = horizontal;
-            Y = values;
+            get { return _seriesTitle; }
+            set
+            {
+                _seriesTitle = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SeriesTitle)));
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public ChartData(IEnumerable<double> horizontal, IEnumerable<double> values, string title)
+        {
+            SeriesTitle = title;
             DataPoints = horizontal.Zip(values, (x, y) => new ChartDataPoint(x, y));
         }
     }

@@ -7,12 +7,15 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using ViewModels.Controllers;
+using ViewModels.DependencyInjection;
 using ViewModels.Model;
 
 namespace ViewModels
 {
     public class MainMDIViewModel : ViewModel
     {
+        private readonly IDispatcher _dispatcher;
+
         #region Observable properties
         public ObservableCollection<TabContentViewModel> Contents { get; } = new ObservableCollection<TabContentViewModel>();
 
@@ -35,9 +38,10 @@ namespace ViewModels
 
         public IIOSoundController IOController { get; }
 
-        public MainMDIViewModel(IIOSoundController controller)
+        public MainMDIViewModel(IIOSoundController controller, IDispatcher dispatcher)
         {
             Name = nameof(MainMDIViewModel);
+            _dispatcher = dispatcher;
             IOController = controller;
         }
 
@@ -109,7 +113,7 @@ namespace ViewModels
 
         private TabContentViewModel AddTab(TitledObject<IWave> wave)
         {
-            TabContentViewModel newContent = new TabContentViewModel(wave);
+            TabContentViewModel newContent = new TabContentViewModel(wave, _dispatcher);
             Contents.Add(newContent);
             return newContent;
         }
