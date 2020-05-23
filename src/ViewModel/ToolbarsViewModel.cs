@@ -24,6 +24,7 @@ namespace ViewModels
         public ICommand AMDFCommand { get; }
         public ICommand CepstralCommand { get; }
         public ICommand FourierCommand { get; }
+        public ICommand ShowBaseFrequencySignalCommand { get; }
 
         #endregion 
 
@@ -55,6 +56,7 @@ namespace ViewModels
             AMDFCommand = new AsyncCommand(() => Job(AMDF));
             CepstralCommand = new AsyncCommand(() => Job(Cepstral));
             FourierCommand = new AsyncCommand(() => Job(Fourier));
+            ShowBaseFrequencySignalCommand = new AsyncCommand(() => Job(ShowBaseFrequencySignal));
         }
 
         public Task Open() => MainMDIViewModel?.OpenSoundFile();
@@ -66,6 +68,8 @@ namespace ViewModels
         public Task Cepstral() => MainMDIViewModel?.CalculatePeriodWithCepstralAnalysis();
 
         public Task Fourier() => MainMDIViewModel?.CalculateFourierTransform();
+
+        public Task ShowBaseFrequencySignal() => MainMDIViewModel?.ShowSignalWithFrequency();
 
         private async Task Job(Func<Task> job)
         {

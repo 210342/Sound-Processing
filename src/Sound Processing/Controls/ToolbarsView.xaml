@@ -8,50 +8,55 @@
     d:DesignHeight="36"
     d:DesignWidth="720">
 
-    <Grid>
+    <Grid Padding="8,8,8,8">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="25*"/>
-            <ColumnDefinition Width="70*"/>
+            <ColumnDefinition Width="20*"/>
+            <ColumnDefinition Width="75*"/>
             <ColumnDefinition Width="5*"/>
         </Grid.ColumnDefinitions>
-        <CommandBar x:Name="FileToolbar" VerticalAlignment="Stretch" HorizontalAlignment="Left" Background="Transparent" Foreground="White" FlowDirection="RightToLeft"
-                    Grid.Column="0" Grid.Row="0" IsDynamicOverflowEnabled="False" DefaultLabelPosition="Right" OverflowButtonVisibility="Collapsed">
-            <CommandBar.Content>
-                <Grid/>
-            </CommandBar.Content>
-            <AppBarButton x:Name="SaveFile" Icon="Save" Label="Save" VerticalAlignment="Stretch" Foreground="White"  FocusVisualPrimaryBrush="White" 
-                          Command="{Binding SaveCommand}" IsEnabled="False"/>
-            <AppBarButton x:Name="LoadFile" Icon="OpenFile" Label="Open" VerticalAlignment="Stretch" Foreground="White" FocusVisualPrimaryBrush="White" 
-                          Command="{Binding OpenCommand}"/>
-        </CommandBar>
-        <CommandBar x:Name="SoundToolbar" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Transparent" Foreground="White"
-                    Grid.Column="1" Grid.Row="0" DefaultLabelPosition="Right" IsDynamicOverflowEnabled="False" OverflowButtonVisibility="Collapsed">
-            <FlyoutBase.AttachedFlyout>
-                <Flyout x:Name="ParameterFlyout" Placement="Bottom">
-                    <Grid HorizontalAlignment="Stretch">
-                        <Grid.Resources>
-                            <Style TargetType="Viewbox">
-                                <Setter Property="Margin" Value="4,4,4,4" />
-                            </Style>
-                        </Grid.Resources>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <Slider Grid.Row="0" HorizontalAlignment="Stretch" Minimum="0.001" Maximum="0.2" Value="{Binding Accuracy, Mode=TwoWay}" 
-                                StepFrequency="0.001" Foreground="White" FocusVisualPrimaryBrush="White"/>
-                        <Button Grid.Row="1" HorizontalAlignment="Stretch" Content="Run" Command="{Binding AMDFCommand}" />
-                    </Grid>
-                </Flyout>
-            </FlyoutBase.AttachedFlyout>
-            <CommandBar.Content>
-                <Grid/>
-            </CommandBar.Content>
-            <AppBarButton Icon="Calculator" Label="Fourier transform" VerticalAlignment="Stretch" Foreground="White" Command="{Binding FourierCommand}" />
-            <AppBarSeparator Foreground="White"/>
-            <AppBarButton Icon="FourBars" Label="Cepstral analysis" VerticalAlignment="Stretch" Foreground="White" Command="{Binding CepstralCommand}"/>
-            <AppBarButton Icon="Rotate" Label="AMDF" VerticalAlignment="Stretch" Foreground="White" Flyout="{x:Bind ParameterFlyout}"/>
-        </CommandBar>
-        <ProgressRing x:Name="ProgressIndicator" Grid.Row="0" Grid.Column="2" Height="20" Width="20" IsActive="{Binding IsCalculating}"/>
+        <Viewbox VerticalAlignment="Stretch" HorizontalAlignment="Left" Grid.Column="0" Grid.Row="0">
+            <CommandBar x:Name="FileToolbar" Background="Transparent" Foreground="White" FlowDirection="RightToLeft"
+                        IsDynamicOverflowEnabled="False" DefaultLabelPosition="Right" OverflowButtonVisibility="Collapsed">
+                <CommandBar.Content>
+                    <Grid/>
+                </CommandBar.Content>
+                <AppBarButton x:Name="SaveFile" Icon="Save" Label="Save" VerticalAlignment="Stretch" Foreground="White"  FocusVisualPrimaryBrush="White" 
+                              Command="{Binding SaveCommand}" IsEnabled="False"/>
+                <AppBarButton x:Name="LoadFile" Icon="OpenFile" Label="Open" VerticalAlignment="Stretch" Foreground="White" FocusVisualPrimaryBrush="White" 
+                              Command="{Binding OpenCommand}"/>
+            </CommandBar>
+        </Viewbox>
+        <Viewbox VerticalAlignment="Stretch" HorizontalAlignment="Right" Grid.Column="1" Grid.Row="0">
+            <CommandBar x:Name="SoundToolbar" Background="Transparent" Foreground="White" HorizontalAlignment="Right"
+                         DefaultLabelPosition="Right" IsDynamicOverflowEnabled="False" OverflowButtonVisibility="Collapsed">
+                <FlyoutBase.AttachedFlyout>
+                    <Flyout x:Name="ParameterFlyout" Placement="Bottom">
+                        <Grid HorizontalAlignment="Stretch">
+                            <Grid.Resources>
+                                <Style TargetType="Viewbox">
+                                    <Setter Property="Margin" Value="4,4,4,4" />
+                                </Style>
+                            </Grid.Resources>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Slider Grid.Row="0" HorizontalAlignment="Stretch" Minimum="0.001" Maximum="0.2" Value="{Binding Accuracy, Mode=TwoWay}" 
+                                    StepFrequency="0.001" Foreground="White" FocusVisualPrimaryBrush="White"/>
+                            <Button Grid.Row="1" HorizontalAlignment="Stretch" Content="Run" Command="{Binding AMDFCommand}" />
+                        </Grid>
+                    </Flyout>
+                </FlyoutBase.AttachedFlyout>
+                <AppBarButton Icon="Find" Label="Show base frequency signal" VerticalAlignment="Stretch" Foreground="White" Command="{Binding ShowBaseFrequencySignalCommand}" />
+                <AppBarSeparator Foreground="White"/>
+                <AppBarButton Icon="Calculator" Label="Fourier transform" VerticalAlignment="Stretch" Foreground="White" Command="{Binding FourierCommand}" />
+                <AppBarSeparator Foreground="White"/>
+                <AppBarButton Icon="FourBars" Label="Cepstral analysis" VerticalAlignment="Stretch" Foreground="White" Command="{Binding CepstralCommand}"/>
+                <AppBarButton Icon="Rotate" Label="AMDF" VerticalAlignment="Stretch" Foreground="White" Flyout="{x:Bind ParameterFlyout}"/>
+            </CommandBar>
+        </Viewbox>
+        <Viewbox Grid.Row="0" Grid.Column="2" >
+        <ProgressRing x:Name="ProgressIndicator" IsActive="{Binding IsCalculating}" Padding="6,6,6,6" />
+        </Viewbox>
     </Grid>
 </UserControl>

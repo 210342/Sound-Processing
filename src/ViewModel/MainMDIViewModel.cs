@@ -53,7 +53,10 @@ namespace ViewModels
         public async Task OpenSoundFile()
         {
             TitledObject<IWave> wave = await IOController?.OpenSoundFile();
-            SelectedTab = AddTab(wave);
+            if (wave != null)
+            {
+                SelectedTab = AddTab(wave);
+            }
         }
 
         public void CloseTab(object tab)
@@ -63,7 +66,7 @@ namespace ViewModels
 
         public async Task CalculatePeriodWithAMDF(double accuracy)
         {
-            if (SelectedTab is null)
+            if (SelectedTab?.Wave?.Value is null)
             {
                 return;
             }
@@ -77,15 +80,16 @@ namespace ViewModels
             }
         }
 
-        public async Task CalculatePeriodWithCepstralAnalysis() 
+        public async Task CalculatePeriodWithCepstralAnalysis()
         {
-            if (SelectedTab is null)
+            if (SelectedTab?.Wave?.Value is null)
             {
                 return;
             }
 
             SelectedTab.Wave.Value.Period = 
-                await Task.Run(() => SelectedTab.Wave.Value.CepstralAnalysis());
+                await Task.Run(() => SelectedTab.Wave.Value.CepstralAnalysis()) 
+                    / SelectedTab.Wave.Value.SampleRate;
             
             AddTab(new TitledObject<IWave>(
                 SelectedTab.Wave.Value.FourierTransform,
@@ -93,13 +97,13 @@ namespace ViewModels
             ));
             AddTab(new TitledObject<IWave>(
                 SelectedTab.Wave.Value.FourierTransform.FourierTransform,
-                $"{SelectedTab.Wave.Title} - Fourier - Fourier"
+                $"{SelectedTab.Wave.Title} - Cepstrum"
             ));
         }
 
         public async Task CalculateFourierTransform()
         {
-            if (SelectedTab is null)
+            if (SelectedTab?.Wave?.Value is null)
             {
                 return;
             }
@@ -109,6 +113,14 @@ namespace ViewModels
                 newWave,
                 $"{SelectedTab.Wave.Title} - Fourier"
             ));
+        }
+
+        public async Task ShowSignalWithFrequency()
+        {
+            if (SelectedTab?.Wave?.Value is null)
+            {
+                return;
+            }
         }
 
         private TabContentViewModel AddTab(TitledObject<IWave> wave)

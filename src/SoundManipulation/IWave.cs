@@ -19,6 +19,7 @@ namespace SoundManipulation
         decimal SampleRate { get; }
         decimal? Frequency { get; }
         decimal? Period { get; set; }
+        bool IsComplex { get; }
         IWave FourierTransform { get; }
 
         IWave Calculate(IWave other, Func<Complex, Complex, Complex> operation);
@@ -30,5 +31,6 @@ namespace SoundManipulation
         IWave CalculateInverseFourierTransform();
         decimal? AMDF(double accuracy);
         decimal? CepstralAnalysis();
+        int? GetIndexOfFirstLocalMaximum(Func<Complex, double> selector);
     }
 }

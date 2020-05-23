@@ -50,13 +50,13 @@
                 <Button Content="Debug" Click="Button_Click" VerticalAlignment="Center"/>
             </Viewbox>
         </RelativePanel>
-        <qc:SerialChart Grid.Row="1"  DataSource="{Binding TopChart.DataPoints}" CategoryValueMemberPath="X" Margin="16,16,16,16"
+        <qc:SerialChart Grid.Row="1" DataSource="{Binding TopChart.DataPoints}" CategoryValueMemberPath="X" Margin="16,16,16,16"
                         MinimumCategoryGridStep="400" AxisForeground="White" PlotAreaBackground="Black" MinimumValueGridStep="32" >
             <qc:SerialChart.Graphs>
                 <qc:LineGraph Title="{Binding TopChart.SeriesTitle}" ValueMemberPath="Y" Brush="Green" />
             </qc:SerialChart.Graphs>
         </qc:SerialChart>
-        <qc:SerialChart Grid.Row="2"  DataSource="{Binding BottomChart.DataPoints}" CategoryValueMemberPath="X" Margin="16,16,16,16"
+        <qc:SerialChart Grid.Row="2" DataSource="{Binding BottomChart.DataPoints}" CategoryValueMemberPath="X" Margin="16,16,16,16"
                         MinimumCategoryGridStep="400" AxisForeground="White" PlotAreaBackground="Black" MinimumValueGridStep="32">
             <qc:SerialChart.Graphs>
                 <qc:LineGraph Title="{Binding BottomChart.SeriesTitle}" ValueMemberPath="Y" Foreground="White" Brush="Red" />

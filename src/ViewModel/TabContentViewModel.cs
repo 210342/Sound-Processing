@@ -77,17 +77,18 @@ namespace ViewModels
             wave.Value.PropertyChanged += (sender, args) => FrequencyChanged(args.PropertyName);
         }
 
-        private void GenerateCharts(IWave wave) => GenerateCharts(wave, (int)wave.SampleRate);
+        private void GenerateCharts(IWave wave) => GenerateCharts(wave, (int)wave.SampleRate / 4);
 
         private void GenerateCharts(IWave wave, int maxSamplesCount)
         {
             IEnumerable<double> horizontal = Enumerable
                 .Range(0, maxSamplesCount)
-                .Select(i => (double)i);
+                .Select(i => wave.IsComplex ? (double)(i * wave.SampleRate / wave.SamplesCount) : (double)(i * wave.SamplePeriod));
             Charts[REAL] = new ChartData(horizontal, wave.Real.Take(maxSamplesCount), REAL);
             Charts[IMAGINARY] = new ChartData(horizontal, wave.Imaginary.Take(maxSamplesCount), IMAGINARY);
             Charts[MAGNITUDE] = new ChartData(horizontal, wave.Magnitude.Take(maxSamplesCount), MAGNITUDE);
             Charts[PHASE] = new ChartData(horizontal, wave.Phase.Take(maxSamplesCount), PHASE);
+            IsUsingRealAndImaginary = !wave.IsComplex;
             OnPropertyChanged(nameof(TopChart));
             OnPropertyChanged(nameof(BottomChart));
         }
