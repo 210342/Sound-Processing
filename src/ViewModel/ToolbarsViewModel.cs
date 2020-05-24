@@ -65,7 +65,7 @@ namespace ViewModels
 
         public Task AMDF() => MainMDIViewModel?.CalculatePeriodWithAMDF(Accuracy);
 
-        public Task Cepstral() => MainMDIViewModel?.CalculatePeriodWithCepstralAnalysis();
+        public Task Cepstral() => MainMDIViewModel?.CalculatePeriodWithCepstralAnalysis(Accuracy);
 
         public Task Fourier() => MainMDIViewModel?.CalculateFourierTransform();
 

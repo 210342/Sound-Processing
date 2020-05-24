@@ -97,8 +97,11 @@ namespace ViewModels
         {
             if (property.Equals(nameof(Wave.Value.Frequency)))
             {
-                _dispatcher.RunAsync(() => Task.Run(() => 
-                    GenerateCharts(Wave.Value, (int)(Wave.Value.Period / Wave.Value.SamplePeriod) + 1)));
+                _dispatcher.RunAsync(() =>
+                {
+                    GenerateCharts(Wave.Value, (int)(2 * Wave.Value.Period / Wave.Value.SamplePeriod) + 1);
+                    return Task.CompletedTask;
+                });
             }
         }
     }

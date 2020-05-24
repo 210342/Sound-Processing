@@ -80,7 +80,7 @@ namespace ViewModels
             }
         }
 
-        public async Task CalculatePeriodWithCepstralAnalysis()
+        public async Task CalculatePeriodWithCepstralAnalysis(double accuracy)
         {
             if (SelectedTab?.Wave?.Value is null)
             {
@@ -88,8 +88,7 @@ namespace ViewModels
             }
 
             SelectedTab.Wave.Value.Period = 
-                await Task.Run(() => SelectedTab.Wave.Value.CepstralAnalysis()) 
-                    / SelectedTab.Wave.Value.SampleRate;
+                await Task.Run(() => SelectedTab.Wave.Value.CepstralAnalysis(accuracy));
             
             AddTab(new TitledObject<IWave>(
                 SelectedTab.Wave.Value.FourierTransform,
@@ -117,10 +116,20 @@ namespace ViewModels
 
         public async Task ShowSignalWithFrequency()
         {
-            if (SelectedTab?.Wave?.Value is null)
+            if (SelectedTab?.Wave?.Value?.Period is null)
             {
                 return;
             }
+            IWave current = SelectedTab.Wave.Value;
+            IWave baseWave = await Task.Run(() => 
+                WaveFactory.WaveWithFrequency(
+                    Convert.ToDouble(current.Frequency ?? 1),
+                    current.SamplePeriod,
+                    (int)(Math.PI * 2 / (double)(current.SamplePeriod))
+                )
+            );
+            var newContent = AddTab(new TitledObject<IWave>(baseWave, $"Basic wave {(int)current.Frequency} Hz"));
+            SelectedTab = newContent;
         }
 
         private TabContentViewModel AddTab(TitledObject<IWave> wave)
