@@ -26,7 +26,8 @@
     
     <Grid>
         <muxc:TabView x:Name="MdiArea" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                      IsAddTabButtonVisible="False" TabItemsSource="{Binding Contents, Mode=TwoWay}" SelectedItem="{Binding SelectedTab, Mode=TwoWay}"
+                      IsAddTabButtonVisible="False" TabItemsSource="{Binding Contents, Mode=TwoWay}" 
+                      SelectedItem="{Binding SelectedTab, Mode=TwoWay}" SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}"
                       TabItemTemplate="{StaticResource TabContent}" TabCloseRequested="MdiArea_TabCloseRequested">
         </muxc:TabView>
     </Grid>

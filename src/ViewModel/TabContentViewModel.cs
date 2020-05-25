@@ -83,7 +83,7 @@ namespace ViewModels
         {
             IEnumerable<double> horizontal = Enumerable
                 .Range(0, maxSamplesCount)
-                .Select(i => wave.IsComplex ? (double)(i * wave.SampleRate / wave.SamplesCount) : (double)(i * wave.SamplePeriod));
+                .Select(i => wave.IsComplex ? (double)(i * wave.SampleRate / maxSamplesCount) : (double)(i * wave.SamplePeriod));
             Charts[REAL] = new ChartData(horizontal, wave.Real.Take(maxSamplesCount), REAL);
             Charts[IMAGINARY] = new ChartData(horizontal, wave.Imaginary.Take(maxSamplesCount), IMAGINARY);
             Charts[MAGNITUDE] = new ChartData(horizontal, wave.Magnitude.Take(maxSamplesCount), MAGNITUDE);

@@ -30,7 +30,7 @@ namespace SoundManipulation
         IWave CalculateFourierTransform();
         IWave CalculateInverseFourierTransform();
         decimal? AMDF(double accuracy);
-        decimal? CepstralAnalysis(double accuracy);
-        int? GetIndexOfFirstLocalMaximum(Func<Complex, double> selector, double accuracy);
+        decimal? CepstralAnalysis();
+        int? GetIndexOfGlobalMaximum(Func<Complex, double> selector);
     }
 }

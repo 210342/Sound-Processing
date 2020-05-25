@@ -118,39 +118,49 @@ namespace SoundManipulation
             return null;
         }
 
-        public decimal? CepstralAnalysis(double accuracy)
+        public decimal? CepstralAnalysis()
         {
             IWave fourier = FourierTransform;
-            IWave scaled = new Wave(
-                fourier.Magnitude.Select(c => Math.Log(c * c)), 
-                fourier.SamplePeriod
+            IWave magnitude = new Wave(fourier.Magnitude, fourier.SamplePeriod);
+            IWave cepstral = magnitude.CalculateInverseFourierTransform();
+            IWave scaledCepstral = new Wave(
+                cepstral.Samples.Select(c => Complex.FromPolarCoordinates(Math.Log(c.Magnitude * c.Magnitude), c.Phase)),
+                SamplePeriod
             );
-            IWave cepstral = scaled.CalculateInverseFourierTransform();
-            (FourierTransform as Wave).FourierTransform = cepstral;
-            return cepstral.GetIndexOfFirstLocalMaximum(c => c.Magnitude, accuracy);
+            (FourierTransform as Wave).FourierTransform = scaledCepstral;
+            return scaledCepstral.GetIndexOfGlobalMaximum(c => c.Magnitude);
         }
 
-        public int? GetIndexOfFirstLocalMaximum(Func<Complex, double> selector, double accuracy)
+        public int? GetIndexOfGlobalMaximum(Func<Complex, double> selector)
         {
-            for (int i = 8; i < _samples.Length - 1; ++i)
+            int min = 0;
+            for (int i = 1; i < _samples.Length; ++i)
             {
-                double previous = selector(_samples[i - 1]);
-                double current = selector(_samples[i]);
-                double next = selector(_samples[i + 1]);
-                if (current - previous > accuracy * current 
-                    && current - next > accuracy * current)
+                if (selector(_samples[i]) < selector(_samples[min]))
+                {
+                    min = i;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            int max = min + 1;
+            for (int i = min + 2; i < _samples.Length; ++i)
+            {
+                if (selector(_samples[i]) > selector(_samples[max]))
                 {
                     return i;
                 }
             }
-            return null;
+            return max;
         }
 
         public IWave CalculateFourierTransform()
         {
             Complex[] newArray = _samples.ToArray();
             Fourier.Forward(newArray);
-            return new Wave(newArray.Take(newArray.Length / 2), SamplePeriod * 2);
+            return new Wave(newArray.Take(newArray.Length), SamplePeriod * 2);
         }
 
         public IWave CalculateInverseFourierTransform()
