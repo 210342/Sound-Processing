@@ -2,53 +2,89 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Numerics;
+using NAudio.Wave;
+using System.IO;
+using System.Threading.Tasks;
+using System.ComponentModel;
 
 namespace SoundManipulation
 {
     public class Wave : IWave
     {
-        private decimal? _period;
+        private IWave _fourierTransform;
         private readonly Complex[] _samples;
         protected static readonly double EPSILON = 1E-6;
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #region Properties
         public IEnumerable<Complex> Samples => _samples;
         public IEnumerable<double> Real => Samples.Select(c => c.Real);
         public IEnumerable<double> Imaginary => Samples.Select(c => c.Imaginary);
         public IEnumerable<double> Magnitude => Samples.Select(c => c.Magnitude);
         public IEnumerable<double> Phase => Samples.Select(c => c.Phase);
+        public int SamplesCount { get; }
         public decimal SamplePeriod { get; }
         public decimal SampleRate => 1 / SamplePeriod;
-        public decimal Frequency { get; }
-        public decimal Period
+        public decimal? Frequency => 1 / Period;
+        public bool IsComplex { get; }
+
+        public IWave FourierTransform
         {
             get
             {
-                if (!_period.HasValue)
+                if (_fourierTransform is null)
                 {
-                    _period = AMDF();
+                    _fourierTransform = CalculateFourierTransform();
                 }
-                return _period.Value;
+                return _fourierTransform;
+            }
+            private set => _fourierTransform = value;
+        }
+
+        #endregion
+
+        #region Observable properties
+
+        private decimal? _period;
+        public decimal? Period 
+        { 
+            get { return _period; }
+            set
+            {
+                _period = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Period)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Frequency)));
             }
         }
 
-        public Wave(IEnumerable<Complex> samples, decimal samplePeriod, decimal frequency)
+        #endregion
+
+        #region Constructors
+
+        public Wave(IEnumerable<Complex> samples, decimal samplePeriod)
         {
             _samples = samples.ToArray();
+            SamplesCount = _samples.Count();
             SamplePeriod = samplePeriod;
-            Frequency = frequency;
+            IsComplex = true;
         }
 
-        public Wave(IEnumerable<double> samples, decimal samplePeriod, decimal frequency)
+        public Wave(IEnumerable<double> samples, decimal samplePeriod)
         {
             _samples = samples.Select(x => new Complex(x, 0)).ToArray();
+            SamplesCount = _samples.Count();
             SamplePeriod = samplePeriod;
-            Frequency = frequency;
+            IsComplex = false;
         }
 
+        #endregion
+
+        #region API
+
         public IWave Calculate(IWave other, Func<Complex, Complex, Complex> operation) =>
-            new Wave(other.Samples.Zip(Samples, operation), SamplePeriod, Frequency);
+            new Wave(other.Samples.Zip(Samples, operation), SamplePeriod);
 
         public IWave Add(IWave other) => Calculate(other, (lhs, rhs) => lhs + rhs);
 
@@ -57,14 +93,14 @@ namespace SoundManipulation
         public IWave Multiply(IWave other) => Calculate(other, (lhs, rhs) => lhs * rhs);
 
         public IWave Concatenate(IWave other) =>
-            new Wave(Samples.Concat(other.Samples), SamplePeriod, Frequency);
+            new Wave(Samples.Concat(other.Samples), SamplePeriod);
 
-        public decimal AMDF()
+        public decimal? AMDF(double accuracy)
         {
             double[] delayedArray = new double[_samples.Length];
             delayedArray[0] = 0;
-            int? minimumIndex = null;
-            for (int m = 1; m < _samples.Length; ++m)
+            delayedArray[1] = 1;
+            for (int m = 2; m < _samples.Length; ++m)
             {
                 double sum = 0;
                 for (int i = 0; i < _samples.Length; ++i)
@@ -73,27 +109,86 @@ namespace SoundManipulation
                     sum += Complex.Abs(_samples[i] - delayed);
                 }
                 delayedArray[m] = sum;
-                if (!minimumIndex.HasValue || delayedArray[minimumIndex.Value] < sum)
+                if (delayedArray[m - 2] - delayedArray[m - 1] > accuracy * delayedArray[m - 2]
+                    && delayedArray[m] - delayedArray[m - 1] > accuracy * delayedArray[m-1])
                 {
-                    minimumIndex = m;
+                    return (m - 1) * SamplePeriod;
                 }
             }
-            return minimumIndex.Value * SamplePeriod;
+            return null;
+        }
+
+        public decimal? CepstralAnalysis()
+        {
+            IWave fourier = FourierTransform;
+            IWave magnitude = new Wave(fourier.Magnitude, fourier.SamplePeriod);
+            IWave cepstral = magnitude.CalculateInverseFourierTransform();
+            IWave scaledCepstral = new Wave(
+                cepstral.Samples.Select(c => Complex.FromPolarCoordinates(Math.Log(c.Magnitude * c.Magnitude), c.Phase)),
+                SamplePeriod
+            );
+            (FourierTransform as Wave).FourierTransform = scaledCepstral;
+            return scaledCepstral.GetIndexOfGlobalMaximum(c => c.Magnitude);
+        }
+
+        public int? GetIndexOfGlobalMaximum(Func<Complex, double> selector)
+        {
+            int min = 0;
+            for (int i = 1; i < _samples.Length; ++i)
+            {
+                if (selector(_samples[i]) < selector(_samples[min]))
+                {
+                    min = i;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            int max = min + 1;
+            for (int i = min + 2; i < _samples.Length; ++i)
+            {
+                if (selector(_samples[i]) > selector(_samples[max]))
+                {
+                    return i;
+                }
+            }
+            return max;
         }
 
         public IWave CalculateFourierTransform()
         {
-            Complex[] newArray = ExtendSamplesToLengthOfPowerTwo();
+            Complex[] newArray = _samples.ToArray();
             Fourier.Forward(newArray);
-            return new Wave(newArray, SamplePeriod, Frequency);
+            return new Wave(newArray.Take(newArray.Length), SamplePeriod * 2);
         }
 
         public IWave CalculateInverseFourierTransform()
         {
-            Complex[] newArray = ExtendSamplesToLengthOfPowerTwo();
+            Complex[] newArray = _samples.ToArray();
             Fourier.Inverse(newArray);
-            return new Wave(newArray, SamplePeriod, Frequency);
+            return new Wave(newArray, SamplePeriod / 2);
         }
+
+        public static async Task<Wave> ReadFromStreamAsync(Stream stream)
+        {
+            using (WaveFileReader reader = new WaveFileReader(stream))
+            {
+                byte[] bytes = new byte[reader.Length];
+                double[] samples = new double[reader.Length / 2];
+                await reader.ReadAsync(bytes, 0, (int)Math.Min(reader.Length, int.MaxValue));
+                int bytesIterator = 0;
+                for (int i = 0; i < bytes.Length / 2; ++i)
+                {
+                    samples[i] = BitConverter.ToInt16(bytes, bytesIterator);
+                    bytesIterator += 2;
+                }
+                double samplePeriod = reader.TotalTime.TotalSeconds / samples.Length;
+                return new Wave(samples, Convert.ToDecimal(samplePeriod));
+            }
+        }
+
+        #endregion
 
         protected internal int GetCeilingPowerExponent()
         {
@@ -101,7 +196,7 @@ namespace SoundManipulation
             return exponent - (int)exponent < EPSILON ? (int)exponent : (int)(Math.Ceiling(exponent) + 0.01);
         }
 
-        protected internal Complex[] ExtendSamplesToLengthOfPowerTwo()
+        protected internal Complex[] ExtendSamplesToLengthOfPowerOfTwo()
         {
             int integerExponent = GetCeilingPowerExponent();
             return Samples

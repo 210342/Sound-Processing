@@ -1,0 +1,61 @@
+﻿<UserControl
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:qc="using:Ailon.QuickCharts"
+    x:Class="SoundProcessing.Controls.TabContentView"
+    mc:Ignorable="d"
+    Foreground="White"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="10*"/>
+            <RowDefinition Height="10*"/>
+        </Grid.RowDefinitions>
+        <RelativePanel x:Name="InfoPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="8,4,8,4">
+            <RelativePanel.Resources>
+                <Style TargetType="Viewbox">
+                    <Setter Property="Margin" Value="12,0,12,0" />
+                </Style>
+                <Style TargetType="ToggleSwitch">
+                    <Setter Property="Foreground" Value="White" />
+                </Style>
+            </RelativePanel.Resources>
+            <Viewbox x:Name="SampleRateLabelViewBox" RelativePanel.AlignLeftWithPanel="True">
+                <TextBlock x:Name="SampleRateLabel" Text="Sample rate: " VerticalAlignment="Stretch" />
+            </Viewbox>
+            <Viewbox x:Name="SampleRateViewBox" RelativePanel.RightOf="SampleRateLabelViewBox">
+                <TextBlock x:Name="SampleRate" 
+                           Text="{Binding Wave.Value.SampleRate, Converter={StaticResource StringFormatter}, ConverterParameter='\{0:N2\} Hz', Mode=OneTime}" />
+            </Viewbox>
+            <Viewbox x:Name="FundamentalFrequencyLabelViewBox" RelativePanel.RightOf="SampleRateViewBox">
+                <TextBlock x:Name="FundamentalFrequencyLabel" Text="Fundamental Frequency: " VerticalAlignment="Stretch" />
+            </Viewbox>
+            <Viewbox x:Name="FundamentalFrequencyViewBox" RelativePanel.RightOf="FundamentalFrequencyLabelViewBox">
+                <TextBlock  x:Name="BaseFrequency" Text="{Binding Wave.Value.Frequency, Mode=OneWay,  Converter={StaticResource StringFormatter}, 
+                    ConverterParameter='\{0:N3\} Hz',UpdateSourceTrigger=PropertyChanged}" />
+            </Viewbox>
+            <Viewbox x:Name="ComplexSwitchBox" RelativePanel.AlignRightWithPanel="True">
+                <ToggleSwitch x:Name="ComplexSwitch"  Margin="8,0,0,0" FlowDirection="RightToLeft" 
+                              IsOn="{Binding IsUsingRealAndImaginary, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              VerticalAlignment="Stretch" OffContent="Use real and imaginary" OnContent="Use real and imaginary" />
+            </Viewbox>
+        </RelativePanel>
+        <qc:SerialChart Grid.Row="1" DataSource="{Binding TopChart.DataPoints}" CategoryValueMemberPath="Label" Margin="16,16,16,16"
+                        MinimumCategoryGridStep="64" AxisForeground="White" PlotAreaBackground="Black" MinimumValueGridStep="32" >
+            <qc:SerialChart.Graphs>
+                <qc:LineGraph Title="{Binding TopChart.SeriesTitle}" ValueMemberPath="Y" Brush="Green" />
+            </qc:SerialChart.Graphs>
+        </qc:SerialChart>
+        <qc:SerialChart Grid.Row="2" DataSource="{Binding BottomChart.DataPoints}" CategoryValueMemberPath="Label" Margin="16,16,16,16"
+                        MinimumCategoryGridStep="64" AxisForeground="White" PlotAreaBackground="Black" MinimumValueGridStep="32">
+            <qc:SerialChart.Graphs>
+                <qc:LineGraph Title="{Binding BottomChart.SeriesTitle}" ValueMemberPath="Y" Foreground="White" Brush="Red" />
+            </qc:SerialChart.Graphs>
+        </qc:SerialChart>
+    </Grid>
+</UserControl>

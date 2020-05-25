@@ -1,21 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Numerics;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SoundManipulation
 {
-    public interface IWave
+    public interface IWave : INotifyPropertyChanged
     {
         IEnumerable<Complex> Samples { get; }
         IEnumerable<double> Real { get; }
         IEnumerable<double> Imaginary { get; }
         IEnumerable<double> Magnitude { get; }
         IEnumerable<double> Phase { get; }
+        int SamplesCount { get; }
         decimal SamplePeriod { get; }
         decimal SampleRate { get; }
-        decimal Frequency { get; }
-        decimal Period { get; }
+        decimal? Frequency { get; }
+        decimal? Period { get; set; }
+        bool IsComplex { get; }
+        IWave FourierTransform { get; }
 
         IWave Calculate(IWave other, Func<Complex, Complex, Complex> operation);
         IWave Add(IWave other);
@@ -24,6 +29,8 @@ namespace SoundManipulation
         IWave Concatenate(IWave other);
         IWave CalculateFourierTransform();
         IWave CalculateInverseFourierTransform();
-        decimal AMDF();
+        decimal? AMDF(double accuracy);
+        decimal? CepstralAnalysis();
+        int? GetIndexOfGlobalMaximum(Func<Complex, double> selector);
     }
 }
