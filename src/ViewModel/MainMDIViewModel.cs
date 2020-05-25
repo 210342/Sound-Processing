@@ -77,8 +77,9 @@ namespace ViewModels
         public void CloseTab(object tab)
         {
             Contents.Remove(tab as TabContentViewModel);
-            SelectedIndex = Math.Min(SelectedIndex, Contents.Count);
-            SelectedTab = Contents.ElementAt(SelectedIndex);
+            SelectedIndex = tab.Equals(SelectedTab)
+                ? Math.Min(SelectedIndex, Contents.Count - 1)
+                : Contents.IndexOf(SelectedTab);
         }
 
         public async Task CalculatePeriodWithAMDF(double accuracy)
