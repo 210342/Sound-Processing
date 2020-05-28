@@ -29,12 +29,39 @@
         <Viewbox VerticalAlignment="Stretch" HorizontalAlignment="Right" Grid.Column="1" Grid.Row="0">
             <CommandBar x:Name="SoundToolbar" Background="Transparent" Foreground="White" HorizontalAlignment="Right"
                          DefaultLabelPosition="Right" IsDynamicOverflowEnabled="False" OverflowButtonVisibility="Collapsed">
-                <AppBarButton Icon="Find" Label="Show base frequency signal" VerticalAlignment="Stretch" Foreground="White" Command="{Binding ShowBaseFrequencySignalCommand}" />
+                <AppBarButton Icon="Find" Label="Show fundamental frequency signal" VerticalAlignment="Stretch" Foreground="White" Command="{Binding ShowBaseFrequencySignalCommand}" />
                 <AppBarSeparator Foreground="White"/>
                 <AppBarButton Icon="Calculator" Label="Fourier transform" VerticalAlignment="Stretch" Foreground="White" Command="{Binding FourierCommand}" />
+                <AppBarButton x:Name="WindowSizeButton" Icon="DockRight" Label="{Binding WindowSizeLabel, Mode=TwoWay}" Foreground="White" Flyout="{x:Bind WindowSizeFlyout}">
+                    <AppBarButton.Resources>
+                        <Style TargetType="FlyoutPresenter" x:Name="FlyoutStyle">
+                            <Setter Property="IsTabStop" Value="True" />
+                            <Setter Property="IsFocusEngagementEnabled" Value="True" />
+                        </Style>
+                    </AppBarButton.Resources>
+                    <FlyoutBase.AttachedFlyout>
+                        <Flyout x:Name="WindowSizeFlyout" Placement="Bottom" FlyoutPresenterStyle="{StaticResource FlyoutStyle}" AllowFocusOnInteraction="True">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <RadioButton x:Name="WindowSize512" IsChecked="{Binding IsWindow512Checked, Mode=TwoWay}" Content="512" Grid.Row="0" Grid.Column="0"/>
+                                <RadioButton x:Name="WindowSize1024" IsChecked="{Binding IsWindow1024Checked, Mode=TwoWay}" Content="1024" Grid.Row="0" Grid.Column="1"/>
+                                <RadioButton x:Name="WindowSize2048" IsChecked="{Binding IsWindow2048Checked, Mode=TwoWay}" Content="2048" Grid.Row="1" Grid.Column="0"/>
+                                <RadioButton x:Name="WindowSize4096" IsChecked="{Binding IsWindow4096Checked, Mode=TwoWay}" Content="4096" Grid.Row="1" Grid.Column="1"/>
+                            </Grid>
+                        </Flyout>
+                    </FlyoutBase.AttachedFlyout>
+                </AppBarButton>
                 <AppBarSeparator Foreground="White"/>
-                <AppBarButton Icon="FourBars" Label="Cepstral analysis" VerticalAlignment="Stretch" Foreground="White" Command="{Binding CepstralCommand}"/>
-                <AppBarButton Icon="Rotate" Label="AMDF" VerticalAlignment="Stretch" Foreground="White" Flyout="{x:Bind AmdfFlyout}" >
+                <AppBarButton x:Name="CepstralButton"  Icon="FourBars" Label="Cepstral analysis" VerticalAlignment="Stretch" 
+                              Foreground="White" Command="{Binding CepstralCommand}"/>
+                <AppBarButton x:Name="AmdfButton" Icon="Rotate" Label="AMDF" VerticalAlignment="Stretch" Foreground="White" Flyout="{x:Bind AmdfFlyout}">
                     <FlyoutBase.AttachedFlyout>
                         <Flyout x:Name="AmdfFlyout" Placement="Bottom">
                             <Grid HorizontalAlignment="Stretch">
@@ -48,8 +75,8 @@
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <Slider Grid.Row="0" HorizontalAlignment="Stretch" Minimum="0" Maximum="0.2" Value="{Binding Accuracy, Mode=TwoWay}" 
-                                    StepFrequency="0.001" Foreground="White" FocusVisualPrimaryBrush="White"/>
-                                <Button Grid.Row="1" HorizontalAlignment="Stretch" Content="Run" Command="{Binding AMDFCommand}" />
+                                    StepFrequency="0.001" Foreground="White" FocusVisualPrimaryBrush="White" Width="{x:Bind AmdfButton.Width}"/>
+                                <Button Grid.Row="1" HorizontalAlignment="Stretch" Content="Run" Command="{Binding AMDFCommand}" Width="{x:Bind AmdfButton.Width}" />
                             </Grid>
                         </Flyout>
                     </FlyoutBase.AttachedFlyout>
@@ -57,7 +84,7 @@
             </CommandBar>
         </Viewbox>
         <Viewbox Grid.Row="0" Grid.Column="2" >
-        <ProgressRing x:Name="ProgressIndicator" IsActive="{Binding IsCalculating}" Padding="6,6,6,6" />
+            <ProgressRing x:Name="ProgressIndicator" IsActive="{Binding IsCalculating}" Padding="6,6,6,6" />
         </Viewbox>
     </Grid>
 </UserControl>

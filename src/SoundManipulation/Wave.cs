@@ -59,6 +59,17 @@ namespace SoundManipulation
             }
         }
 
+        private IEnumerable<decimal?> _fundamentalFrequencies = Enumerable.Empty<decimal?>();
+        public IEnumerable<decimal?> FundamentalFrequencies
+        {
+            get => _fundamentalFrequencies;
+            set
+            {
+                _fundamentalFrequencies = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FundamentalFrequencies)));
+            }
+        }
+
         #endregion
 
         #region Constructors
@@ -118,8 +129,29 @@ namespace SoundManipulation
             return null;
         }
 
-        public decimal? CepstralAnalysis()
+        public decimal? CepstralAnalysis(int windowSize)
         {
+            IList<int?> windowedFrequencies = new List<int?>();
+            for (int i = 0; i < _samples.Length; i += windowSize)
+            {
+                IWave windowed = new Wave(_samples.Skip(i).Take(windowSize), SamplePeriod);
+                IWave windowedFourier = windowed.FourierTransform;
+                IWave magnitudeFourier = new Wave(windowedFourier.Magnitude, windowedFourier.SamplePeriod);
+                IWave windowedCepstrum = magnitudeFourier.CalculateInverseFourierTransform();
+                IWave scaledCepstrum = new Wave(
+                    windowedCepstrum.Samples.Select(c => 
+                        Complex.FromPolarCoordinates(Math.Log(c.Magnitude * c.Magnitude), c.Phase)),
+                    SamplePeriod
+                );
+                windowedFrequencies.Add(scaledCepstrum.GetIndexOfGlobalMaximum(c => c.Magnitude));
+            }
+            FundamentalFrequencies = windowedFrequencies
+                .Where(i => i.HasValue)
+                .Select(i => i.Value)
+                .MergeSimilar(0.2)
+                .Select(i => SampleRate / i)
+                .OrderBy(d => d)
+                .Cast<decimal?>();
             IWave fourier = FourierTransform;
             IWave magnitude = new Wave(fourier.Magnitude, fourier.SamplePeriod);
             IWave cepstral = magnitude.CalculateInverseFourierTransform();
@@ -128,15 +160,16 @@ namespace SoundManipulation
                 SamplePeriod
             );
             (FourierTransform as Wave).FourierTransform = scaledCepstral;
-            return scaledCepstral.GetIndexOfGlobalMaximum(c => c.Magnitude);
+            return SampleRate / scaledCepstral.GetIndexOfGlobalMaximum(c => c.Magnitude);
         }
 
         public int? GetIndexOfGlobalMaximum(Func<Complex, double> selector)
         {
+            double threshold = selector(_samples[0]) / 2;
             int min = 0;
             for (int i = 1; i < _samples.Length; ++i)
             {
-                if (selector(_samples[i]) < selector(_samples[min]))
+                if (selector(_samples[i]) < selector(_samples[min]) || selector(_samples[i]) > threshold)
                 {
                     min = i;
                 }
@@ -146,11 +179,11 @@ namespace SoundManipulation
                 }
             }
             int max = min + 1;
-            for (int i = min + 2; i < _samples.Length; ++i)
+            for (int i = min + 2; i < _samples.Length / 2; ++i)
             {
                 if (selector(_samples[i]) > selector(_samples[max]))
                 {
-                    return i;
+                    max = i;
                 }
             }
             return max;
@@ -160,7 +193,7 @@ namespace SoundManipulation
         {
             Complex[] newArray = _samples.ToArray();
             Fourier.Forward(newArray);
-            return new Wave(newArray.Take(newArray.Length), SamplePeriod * 2);
+            return new Wave(newArray.Take(newArray.Length), SamplePeriod);
         }
 
         public IWave CalculateInverseFourierTransform()
