@@ -77,9 +77,8 @@ namespace ViewModels
         public void CloseTab(object tab)
         {
             Contents.Remove(tab as TabContentViewModel);
-            SelectedIndex = tab.Equals(SelectedTab)
-                ? Math.Min(SelectedIndex, Contents.Count - 1)
-                : Contents.IndexOf(SelectedTab);
+            SelectedIndex = Math.Min(SelectedIndex, Contents.Count - 1);
+            SelectedTab = SelectedIndex < 0 ? null : Contents.ElementAt(SelectedIndex);
         }
 
         public async Task CalculatePeriodWithAMDF(double accuracy)
@@ -98,16 +97,15 @@ namespace ViewModels
             }
         }
 
-        public async Task CalculatePeriodWithCepstralAnalysis(double accuracy)
+        public async Task CalculatePeriodWithCepstralAnalysis(int windowSize)
         {
             if (SelectedTab?.Wave?.Value is null)
             {
                 return;
             }
 
-            SelectedTab.Wave.Value.Period =
-                await Task.Run(() => SelectedTab.Wave.Value.CepstralAnalysis()) /
-                SelectedTab.Wave.Value.SampleRate;
+            SelectedTab.Wave.Value.Period = 1 /
+                await Task.Run(() => SelectedTab.Wave.Value.CepstralAnalysis(windowSize));
             
             AddTab(new TitledObject<IWave>(
                 SelectedTab.Wave.Value.FourierTransform,

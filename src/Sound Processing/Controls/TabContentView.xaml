@@ -35,9 +35,10 @@
             <Viewbox x:Name="FundamentalFrequencyLabelViewBox" RelativePanel.RightOf="SampleRateViewBox">
                 <TextBlock x:Name="FundamentalFrequencyLabel" Text="Fundamental Frequency: " VerticalAlignment="Stretch" />
             </Viewbox>
-            <Viewbox x:Name="FundamentalFrequencyViewBox" RelativePanel.RightOf="FundamentalFrequencyLabelViewBox">
-                <TextBlock  x:Name="BaseFrequency" Text="{Binding Wave.Value.Frequency, Mode=OneWay,  Converter={StaticResource StringFormatter}, 
-                    ConverterParameter='\{0:N3\} Hz',UpdateSourceTrigger=PropertyChanged}" />
+            <Viewbox x:Name="FundamentalFrequencyViewBox" RelativePanel.RightOf="FundamentalFrequencyLabelViewBox" RelativePanel.LeftOf="ComplexSwitchBox"
+                     VerticalAlignment="Center" HorizontalAlignment="Left">
+                <TextBlock  x:Name="BaseFrequency" Text="{Binding FrequencyLabel, Mode=OneWay}" 
+                            VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="WordEllipsis"/>
             </Viewbox>
             <Viewbox x:Name="ComplexSwitchBox" RelativePanel.AlignRightWithPanel="True">
                 <ToggleSwitch x:Name="ComplexSwitch"  Margin="8,0,0,0" FlowDirection="RightToLeft" 
