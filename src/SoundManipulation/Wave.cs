@@ -208,13 +208,15 @@ namespace SoundManipulation
             using (WaveFileReader reader = new WaveFileReader(stream))
             {
                 byte[] bytes = new byte[reader.Length];
-                double[] samples = new double[reader.Length / 2];
+                double[] samples = new double[reader.Length / reader.BlockAlign];
                 await reader.ReadAsync(bytes, 0, (int)Math.Min(reader.Length, int.MaxValue));
                 int bytesIterator = 0;
-                for (int i = 0; i < bytes.Length / 2; ++i)
+                for (int i = 0; i < samples.Length; ++i)
                 {
-                    samples[i] = BitConverter.ToInt16(bytes, bytesIterator);
-                    bytesIterator += 2;
+                    byte[] sample = new byte[4];
+                    bytes.AsSpan(bytesIterator, reader.BlockAlign).CopyTo(sample.AsSpan(4 - reader.BlockAlign));
+                    samples[i] = BitConverter.ToInt32(sample, 0);
+                    bytesIterator += reader.BlockAlign;
                 }
                 double samplePeriod = reader.TotalTime.TotalSeconds / samples.Length;
                 return new Wave(samples, Convert.ToDecimal(samplePeriod));
