@@ -45,6 +45,8 @@ namespace ViewModels
             }
         }
 
+        #region Fourier
+
         public string WindowSizeLabel => $"Window size: {GetSelectedWindowSize()}";
 
         private bool _isWindow512Checked = false;
@@ -94,6 +96,100 @@ namespace ViewModels
                 OnPropertyChanged(nameof(WindowSizeLabel));
             }
         }
+
+        #endregion Fourier
+
+        #region Filter
+
+        private bool _isUsingRectangularWindow = true;
+        public bool IsUsingRectangularWindow
+        {
+            get => _isUsingRectangularWindow;
+            set
+            {
+                _isUsingRectangularWindow = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _isUsingHannWindow = false;
+        public bool IsUsingHannWindow
+        {
+            get => _isUsingHannWindow;
+            set
+            {
+                _isUsingHannWindow = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _isUsingHammingWindow = false;
+        public bool IsUsingHammingWindow
+        {
+            get => _isUsingHammingWindow;
+            set
+            {
+                _isUsingHammingWindow = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _isUsingCausalFilter = true;
+        public bool IsUsingCausalFilter
+        {
+            get => _isUsingCausalFilter;
+            set
+            {
+                _isUsingCausalFilter = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private int _windowLength = 33;
+        public double WindowLength
+        {
+            get => _windowLength;
+            set
+            {
+                _windowLength = (int)value;
+                OnPropertyChanged();
+            }
+        }
+
+        private int _filterLength = 63;
+        public double FilterLength
+        {
+            get => _filterLength;
+            set
+            {
+                _filterLength = (int)value;
+                OnPropertyChanged();
+            }
+        }
+
+        private int _hopSize = 1;
+        public double HopSize
+        {
+            get => _hopSize;
+            set
+            {
+                _hopSize = (int)value;
+                OnPropertyChanged();
+            }
+        }
+
+        private int _cutoffFrequency = 420;
+        public double CutoffFrequency
+        {
+            get => _cutoffFrequency;
+            set
+            {
+                _cutoffFrequency = (int)value;
+                OnPropertyChanged();
+            }
+        }
+
+        #endregion
 
         #endregion
 
