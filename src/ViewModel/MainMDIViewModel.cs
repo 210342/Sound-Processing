@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using ViewModels.Controllers;
@@ -81,20 +82,20 @@ namespace ViewModels
             SelectedTab = SelectedIndex < 0 ? null : Contents.ElementAt(SelectedIndex);
         }
 
-        public async Task CalculatePeriodWithAMDF(double accuracy)
+        public async Task CalculatePeriodWithAMDF(int windowSize, double accuracy)
         {
             if (SelectedTab?.Wave?.Value is null)
             {
                 return;
             }
 
-            decimal? period =
-                await Task.Run(() => SelectedTab?.Wave?.Value?.AMDF(accuracy));
-
-            if (period.HasValue)
-            {
-                SelectedTab.Wave.Value.Period = period;
-            }
+            SelectedTab.WindowSize = windowSize;
+            SelectedTab.Wave.Value.FundamentalFrequencies =
+                await Task.Run(() => SelectedTab?.Wave?.Value?.GetFrequencies(
+                    nameof(SelectedTab.Wave.Value.AMDF),
+                    windowSize,
+                    accuracy
+                ));
         }
 
         public async Task CalculatePeriodWithCepstralAnalysis(int windowSize)
@@ -104,15 +105,20 @@ namespace ViewModels
                 return;
             }
 
-            SelectedTab.Wave.Value.Period = 1 /
-                await Task.Run(() => SelectedTab.Wave.Value.CepstralAnalysis(windowSize));
+            SelectedTab.WindowSize = windowSize;
+            SelectedTab.Wave.Value.FundamentalFrequencies = 
+                await Task.Run(() => SelectedTab.Wave.Value.GetFrequencies(
+                    nameof(SelectedTab.Wave.Value.CepstralAnalysis), 
+                    windowSize, 
+                    0
+                ));
             
             AddTab(new TitledObject<IWave>(
                 SelectedTab.Wave.Value.FourierTransform,
                 $"{SelectedTab.Wave.Title} - Fourier"
             ));
             AddTab(new TitledObject<IWave>(
-                SelectedTab.Wave.Value.FourierTransform.FourierTransform,
+                SelectedTab.Wave.Value.WindowedCepstrum,
                 $"{SelectedTab.Wave.Title} - Cepstrum"
             ));
         }
@@ -148,6 +154,16 @@ namespace ViewModels
             );
             var newTab = AddTab(new TitledObject<IWave>(baseWave, $"Basic wave {(int)current.Frequency} Hz"));
             SelectTab(newTab);
+        }
+
+        public async Task FilterSignal()
+        {
+            if (SelectedTab?.Wave?.Value is null)
+            {
+                return;
+            }
+
+
         }
 
         private TabContentViewModel AddTab(TitledObject<IWave> wave)

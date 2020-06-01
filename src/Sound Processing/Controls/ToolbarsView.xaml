@@ -67,38 +67,37 @@
                                 <Viewbox Grid.Row="0" Grid.Column="1" Margin="4, 0, 4, 0" Height="28">
                                     <TextBlock Text="Parameters" />
                                 </Viewbox>
-                                <RelativePanel Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch">
+                                <RelativePanel Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" Margin="2,4,2,4">
                                     <Viewbox RelativePanel.AlignLeftWithPanel="True" RelativePanel.LeftOf="MValue" RelativePanel.AlignVerticalCenterWithPanel="True">
                                         <TextBlock Text="Window length" VerticalAlignment="Center"/>
                                     </Viewbox>
                                     <controls:NumberBox x:Name="MValue" SpinButtonPlacementMode="Compact" RelativePanel.AlignRightWithPanel="True"
-                                                        Maximum="44100" Minimum="0" Value="{Binding WindowLength, Mode=TwoWay}"/>
+                                                        Maximum="44100" Minimum="0" Value="{Binding WindowLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                 </RelativePanel>
-                                <RelativePanel Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch">
+                                <RelativePanel Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" Margin="2,4,2,4">
                                     <Viewbox RelativePanel.AlignLeftWithPanel="True"  RelativePanel.LeftOf="RValue" RelativePanel.AlignVerticalCenterWithPanel="True">
                                         <TextBlock Text="Hop size" VerticalAlignment="Center"/>
                                     </Viewbox>
                                     <controls:NumberBox x:Name="RValue" SpinButtonPlacementMode="Compact" RelativePanel.AlignRightWithPanel="True"
-                                                        Maximum="44100" Minimum="0" Value="{Binding HopSize, Mode=TwoWay}"/>
+                                                        Maximum="44100" Minimum="0" Value="{Binding HopSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                 </RelativePanel>
-                                <RelativePanel Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch">
+                                <RelativePanel Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch" Margin="2,4,2,4">
                                     <Viewbox RelativePanel.AlignLeftWithPanel="True" RelativePanel.LeftOf="LValue" RelativePanel.AlignVerticalCenterWithPanel="True">
                                         <TextBlock Text="Filter length" VerticalAlignment="Center" HorizontalAlignment="Left"/>
                                     </Viewbox>
                                     <controls:NumberBox x:Name="LValue" SpinButtonPlacementMode="Compact" RelativePanel.AlignRightWithPanel="True"
-                                                        Maximum="44100" Minimum="0" Value="{Binding FilterLength, Mode=TwoWay}"/>
+                                                        Maximum="44100" Minimum="0" Value="{Binding FilterLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                 </RelativePanel>
-                                <RelativePanel Grid.Row="4" Grid.Column="1" HorizontalAlignment="Stretch">
+                                <RelativePanel Grid.Row="4" Grid.Column="1" HorizontalAlignment="Stretch" Margin="2,4,2,4">
                                     <Viewbox RelativePanel.AlignLeftWithPanel="True" RelativePanel.LeftOf="FcValue" RelativePanel.AlignVerticalCenterWithPanel="True">
                                         <TextBlock VerticalAlignment="Center" Text="Cutoff frequency" HorizontalAlignment="Left"/>
                                     </Viewbox>
                                     <controls:NumberBox x:Name="FcValue" SpinButtonPlacementMode="Compact" RelativePanel.AlignRightWithPanel="True" 
-                                                        Maximum="20000" Minimum="0" Value="{Binding CutoffFrequency, Mode=TwoWay}"/>
+                                                        Maximum="20000" Minimum="0" Value="{Binding CutoffFrequency, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                 </RelativePanel>
                                 <CheckBox Grid.Row="5" Grid.Column="0" Content="Use causal filter" IsChecked="{Binding IsUsingCausalFilter, Mode=TwoWay}" />
-                                <Viewbox Grid.Row="5" Grid.Column="1">
-                                    <Button x:Name="RunFilter" Content="Run" Command="{Binding FilterCommand}" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                                </Viewbox>
+                                <Button x:Name="RunFilter" Content="Run" Command="{Binding FilterCommand}" Grid.Row="5" Grid.Column="1"
+                                        HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
                             </Grid>
                         </Flyout>
                     </FlyoutBase.AttachedFlyout>

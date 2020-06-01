@@ -7,6 +7,8 @@ using NAudio.Wave;
 using System.IO;
 using System.Threading.Tasks;
 using System.ComponentModel;
+using System.Reflection;
+using MathNet.Numerics;
 
 namespace SoundManipulation
 {
@@ -24,6 +26,7 @@ namespace SoundManipulation
         public IEnumerable<double> Imaginary => Samples.Select(c => c.Imaginary);
         public IEnumerable<double> Magnitude => Samples.Select(c => c.Magnitude);
         public IEnumerable<double> Phase => Samples.Select(c => c.Phase);
+        public IEnumerable<double> HorizontalAxis { get; }
         public int SamplesCount { get; }
         public decimal SamplePeriod { get; }
         public decimal SampleRate => 1 / SamplePeriod;
@@ -36,12 +39,16 @@ namespace SoundManipulation
             {
                 if (_fourierTransform is null)
                 {
-                    _fourierTransform = CalculateFourierTransform();
+                    _fourierTransform = new Wave(
+                        CalculateFourierTransform().Samples.Select(c => new Complex(Math.Log10(c.Magnitude), c.Phase)), SamplePeriod
+                    );
                 }
                 return _fourierTransform;
             }
             private set => _fourierTransform = value;
         }
+
+        public IWave WindowedCepstrum { get; private set; }
 
         #endregion
 
@@ -74,20 +81,20 @@ namespace SoundManipulation
 
         #region Constructors
 
-        public Wave(IEnumerable<Complex> samples, decimal samplePeriod)
+        public Wave(IEnumerable<Complex> samples, decimal samplePeriod) : this(samples, samplePeriod, true) { }
+
+        public Wave(IEnumerable<Complex> samples, decimal samplePeriod, bool isComplex)
+            : this(samples, Enumerable.Range(0, samples.Count()).Select(i => (double)(i * samplePeriod)), samplePeriod, isComplex) { }
+
+        public Wave(IEnumerable<double> samples, decimal samplePeriod) : this(samples.Select(x => new Complex(x, 0)), samplePeriod, false) { }
+
+        public Wave(IEnumerable<Complex> samples, IEnumerable<double> horizontalAxis, decimal samplePeriod, bool isComplex)
         {
             _samples = samples.ToArray();
             SamplesCount = _samples.Count();
             SamplePeriod = samplePeriod;
-            IsComplex = true;
-        }
-
-        public Wave(IEnumerable<double> samples, decimal samplePeriod)
-        {
-            _samples = samples.Select(x => new Complex(x, 0)).ToArray();
-            SamplesCount = _samples.Count();
-            SamplePeriod = samplePeriod;
-            IsComplex = false;
+            IsComplex = isComplex;
+            HorizontalAxis = horizontalAxis;
         }
 
         #endregion
@@ -106,6 +113,22 @@ namespace SoundManipulation
         public IWave Concatenate(IWave other) =>
             new Wave(Samples.Concat(other.Samples), SamplePeriod);
 
+        public IEnumerable<decimal?> GetFrequencies(string methodName, int windowSize, double accuracy)
+        {
+            IList<decimal?> frequencies = new List<decimal?>();
+            for (int i = 0; i < _samples.Length; i += windowSize)
+            {
+                IWave windowed = new Wave(_samples.Skip(i).Take(windowSize), SamplePeriod);
+                object result = GetType().GetMethod(methodName).Invoke(windowed, new object[] { accuracy });
+                frequencies.Add(result as decimal?);
+                if (WindowedCepstrum is null)
+                {
+                    WindowedCepstrum = windowed.WindowedCepstrum;
+                }
+            }
+            return frequencies;
+        }
+
         public decimal? AMDF(double accuracy)
         {
             double[] delayedArray = new double[_samples.Length];
@@ -123,49 +146,32 @@ namespace SoundManipulation
                 if (delayedArray[m - 2] - delayedArray[m - 1] > accuracy * delayedArray[m - 2]
                     && delayedArray[m] - delayedArray[m - 1] > accuracy * delayedArray[m-1])
                 {
-                    return (m - 1) * SamplePeriod;
+                    return 1 / ((m - 1) * SamplePeriod);
                 }
             }
             return null;
         }
 
-        public decimal? CepstralAnalysis(int windowSize)
+
+        public decimal? CepstralAnalysis(double accuracy)
         {
-            IList<int?> windowedFrequencies = new List<int?>();
-            for (int i = 0; i < _samples.Length; i += windowSize)
-            {
-                IWave windowed = new Wave(_samples.Skip(i).Take(windowSize), SamplePeriod);
-                IWave windowedFourier = windowed.FourierTransform;
-                IWave magnitudeFourier = new Wave(windowedFourier.Magnitude, windowedFourier.SamplePeriod);
-                IWave windowedCepstrum = magnitudeFourier.CalculateInverseFourierTransform();
-                IWave scaledCepstrum = new Wave(
-                    windowedCepstrum.Samples.Select(c => 
-                        Complex.FromPolarCoordinates(Math.Log(c.Magnitude * c.Magnitude), c.Phase)),
-                    SamplePeriod
-                );
-                windowedFrequencies.Add(scaledCepstrum.GetIndexOfGlobalMaximum(c => c.Magnitude));
-            }
-            FundamentalFrequencies = windowedFrequencies
-                .Where(i => i.HasValue)
-                .Select(i => i.Value)
-                .MergeSimilar(0.2)
-                .Select(i => SampleRate / i)
-                .OrderBy(d => d)
-                .Cast<decimal?>();
-            IWave fourier = FourierTransform;
+            IWave fourier = CalculateFourierTransform();
             IWave magnitude = new Wave(fourier.Magnitude, fourier.SamplePeriod);
             IWave cepstral = magnitude.CalculateInverseFourierTransform();
             IWave scaledCepstral = new Wave(
-                cepstral.Samples.Select(c => Complex.FromPolarCoordinates(Math.Log(c.Magnitude * c.Magnitude), c.Phase)),
-                SamplePeriod
+                cepstral.Samples.Select(c => Complex.FromPolarCoordinates(Math.Log(c.Magnitude), c.Phase)),
+                Enumerable.Range(1, cepstral.SamplesCount + 1).Select(i => (double)(SampleRate / i)),
+                SamplePeriod,
+                true
             );
+            WindowedCepstrum = scaledCepstral;
             (FourierTransform as Wave).FourierTransform = scaledCepstral;
             return SampleRate / scaledCepstral.GetIndexOfGlobalMaximum(c => c.Magnitude);
         }
 
         public int? GetIndexOfGlobalMaximum(Func<Complex, double> selector)
         {
-            double threshold = selector(_samples[0]) / 2;
+            double threshold = 0.85 * selector(_samples[0]);
             int min = 0;
             for (int i = 1; i < _samples.Length; ++i)
             {
@@ -193,14 +199,24 @@ namespace SoundManipulation
         {
             Complex[] newArray = _samples.ToArray();
             Fourier.Forward(newArray);
-            return new Wave(newArray.Take(newArray.Length), SamplePeriod);
+            return new Wave(
+                newArray, 
+                Enumerable.Range(0, newArray.Length).Select(i =>(double)(i * SampleRate / SamplesCount)), 
+                SamplePeriod,
+                true
+            );
         }
 
         public IWave CalculateInverseFourierTransform()
         {
             Complex[] newArray = _samples.ToArray();
             Fourier.Inverse(newArray);
-            return new Wave(newArray, SamplePeriod / 2);
+            return new Wave(
+                newArray,
+                Enumerable.Range(0, newArray.Length).Select(i => (double)(i * SampleRate / SamplesCount)),
+                SamplePeriod,
+                true
+            );
         }
 
         public static async Task<Wave> ReadFromStreamAsync(Stream stream)

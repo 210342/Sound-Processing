@@ -19,5 +19,12 @@ namespace SoundManipulation
                 Period = Convert.ToDecimal(1 / frequency)
             };
         }
+
+        public static double[] GetWindowValues(WindowDelegate window, int windowSize)
+        {
+            return Enumerable.Range(0, windowSize).Select(i => window(i, windowSize)).ToArray();
+        }
+
+        // public static IWave GetFilter(double filterLength, double cutoffFrequency, )
     }
 }

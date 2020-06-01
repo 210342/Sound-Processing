@@ -33,12 +33,24 @@
                            Text="{Binding Wave.Value.SampleRate, Converter={StaticResource StringFormatter}, ConverterParameter='\{0:N2\} Hz', Mode=OneTime}" />
             </Viewbox>
             <Viewbox x:Name="FundamentalFrequencyLabelViewBox" RelativePanel.RightOf="SampleRateViewBox">
-                <TextBlock x:Name="FundamentalFrequencyLabel" Text="Fundamental Frequency: " VerticalAlignment="Stretch" />
-            </Viewbox>
-            <Viewbox x:Name="FundamentalFrequencyViewBox" RelativePanel.RightOf="FundamentalFrequencyLabelViewBox" RelativePanel.LeftOf="ComplexSwitchBox"
-                     VerticalAlignment="Center" HorizontalAlignment="Left">
-                <TextBlock  x:Name="BaseFrequency" Text="{Binding FrequencyLabel, Mode=OneWay}" 
-                            VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="WordEllipsis"/>
+                <Button x:Name="FundamentalFrequencyButton" Content="Show fundamental frequencies" VerticalAlignment="Stretch">
+                    <Button.Flyout>
+                        <Flyout>
+                            <ListView ItemsSource="{Binding Windows}">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:Name="FrequencyTemplate">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding TimeFrom, Converter={StaticResource StringFormatter}, ConverterParameter='\{0:N4\} s'}" Margin="4,2,4,2"/>
+                                            <TextBlock Text=" - " Margin="4,2,4,2" />
+                                            <TextBlock Text="{Binding TimeTo, Converter={StaticResource StringFormatter}, ConverterParameter='\{0:N4\} s'}" Margin="4,2,4,2"/>
+                                            <TextBlock Text="{Binding Frequency, Converter={StaticResource StringFormatter}, ConverterParameter='\{0:N2\} Hz'}" FontWeight="Bold" Margin="4,2,4,2"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
             </Viewbox>
             <Viewbox x:Name="ComplexSwitchBox" RelativePanel.AlignRightWithPanel="True">
                 <ToggleSwitch x:Name="ComplexSwitch"  Margin="8,0,0,0" FlowDirection="RightToLeft" 
