@@ -30,6 +30,7 @@ namespace SoundManipulation
         IWave Subtract(IWave other);
         IWave Multiply(IWave other);
         IWave Concatenate(IWave other);
+        IWave Convolve(IWave other);
         IWave CalculateFourierTransform();
         IWave CalculateInverseFourierTransform();
         IEnumerable<decimal?> GetFrequencies(string methodName, int windowSize, double accuracy);

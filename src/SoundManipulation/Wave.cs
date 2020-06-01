@@ -113,6 +113,34 @@ namespace SoundManipulation
         public IWave Concatenate(IWave other) =>
             new Wave(Samples.Concat(other.Samples), SamplePeriod);
 
+        public IWave Convolve(IWave other)
+        {
+            if (!(other is Wave rhs))
+            {
+                return null;
+            }
+
+            int sampleCount = SamplesCount + other.SamplesCount - 1;
+            IList<Complex> values = new List<Complex>();
+            for (int i = 0; i < sampleCount; ++i)
+            {
+                int leftOperandIndex = 0;
+                int rightOperandIndex = i;
+                Complex ithValue = 0;
+                while (leftOperandIndex < SamplesCount && rightOperandIndex >= 0)
+                {
+                    if (rightOperandIndex < other.SamplesCount)
+                    {
+                        ithValue += _samples[leftOperandIndex] * rhs._samples[rightOperandIndex];
+                    }
+                    ++leftOperandIndex;
+                    --rightOperandIndex;
+                }
+                values.Add(ithValue);
+            }
+            return new Wave(values, SamplePeriod);
+        }
+
         public IEnumerable<decimal?> GetFrequencies(string methodName, int windowSize, double accuracy)
         {
             IList<decimal?> frequencies = new List<decimal?>();

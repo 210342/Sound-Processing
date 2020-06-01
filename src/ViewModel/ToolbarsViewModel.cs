@@ -1,5 +1,6 @@
 ﻿using AsyncAwaitBestPractices.MVVM;
 using NAudio.Wave;
+using SoundManipulation.Filtering;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -135,6 +136,39 @@ namespace ViewModels
             }
         }
 
+        private bool _isUsingLowPass = true;
+        public bool IsUsingLowPass
+        {
+            get => _isUsingLowPass;
+            set
+            {
+                _isUsingLowPass = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _isUsingMiddlePass = false;
+        public bool IsUsingMiddlePass
+        {
+            get => _isUsingMiddlePass;
+            set
+            {
+                _isUsingMiddlePass = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _isUsingHighPass = false;
+        public bool IsUsingHighPass
+        {
+            get => _isUsingHighPass;
+            set
+            {
+                _isUsingHighPass = value;
+                OnPropertyChanged();
+            }
+        }
+
         private bool _isUsingCausalFilter = true;
         public bool IsUsingCausalFilter
         {
@@ -168,7 +202,7 @@ namespace ViewModels
             }
         }
 
-        private int _hopSize = 1;
+        private int _hopSize = 16;
         public double HopSize
         {
             get => _hopSize;
@@ -220,7 +254,7 @@ namespace ViewModels
 
         public Task ShowBaseFrequencySignal() => MainMDIViewModel?.ShowSignalWithFrequency();
 
-        public Task Filter() => MainMDIViewModel?.ShowSignalWithFrequency();
+        public Task Filter() => MainMDIViewModel?.FilterSignal(GetFilterType(), GetWindowType(), _windowLength, _hopSize);
 
         private async Task Job(Func<Task> job)
         {
@@ -248,6 +282,38 @@ namespace ViewModels
             else
             {
                 return 4096;
+            }
+        }
+
+        private WindowDelegate GetWindowType()
+        {
+            if (IsUsingHammingWindow)
+            {
+                return WindowFunctions.Hamming;
+            }
+            else if(IsUsingHannWindow)
+            {
+                return WindowFunctions.VonHann;
+            }
+            else
+            {
+                return WindowFunctions.Rectangular;
+            }
+        }
+
+        private IFilter GetFilterType()
+        {
+            if (IsUsingLowPass)
+            {
+                return new LowPassFilter(_filterLength, _cutoffFrequency, IsUsingCausalFilter);
+            }
+            else if (IsUsingHighPass)
+            {
+                return new HighPassFilter(_filterLength, _cutoffFrequency, IsUsingCausalFilter);
+            }
+            else
+            {
+                return new MiddlePassFilter(_filterLength, _cutoffFrequency, IsUsingCausalFilter);
             }
         }
     }

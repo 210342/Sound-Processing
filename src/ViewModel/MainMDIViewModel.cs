@@ -1,5 +1,6 @@
 ﻿using AsyncAwaitBestPractices.MVVM;
 using SoundManipulation;
+using SoundManipulation.Filtering;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -156,14 +157,16 @@ namespace ViewModels
             SelectTab(newTab);
         }
 
-        public async Task FilterSignal()
+        public async Task FilterSignal(IFilter filter, WindowDelegate window, int windowLength, int hopSize)
         {
             if (SelectedTab?.Wave?.Value is null)
             {
                 return;
             }
 
-
+            // TODO:
+            // filter by convolution
+            // filter by fourier
         }
 
         private TabContentViewModel AddTab(TitledObject<IWave> wave)

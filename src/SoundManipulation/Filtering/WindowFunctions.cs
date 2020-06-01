@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace SoundManipulation
+namespace SoundManipulation.Filtering
 {
     public delegate double WindowDelegate(int sampleIndex, int windowSize); 
 
-    public static class WaveFunctions
+    public static class WindowFunctions
     {
         public static double Rectangular(int sampleIndex, int windowSize)
         {

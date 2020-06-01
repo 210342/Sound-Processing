@@ -45,6 +45,7 @@
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="2*" />
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
@@ -55,49 +56,59 @@
                                     <RowDefinition Height="*" />
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
-                                <Viewbox Grid.Row="0" Grid.Column="0" Margin="4, 0, 4, 0" Height="28">
-                                    <TextBlock Text="Window function"/>
+                                <Viewbox Grid.Row="0" Grid.Column="0" Margin="4, 0, 4, 0" Height="24">
+                                    <TextBlock Text="Filter type" FontWeight="Bold"/>
                                 </Viewbox>
-                                <RadioButton x:Name="RectangularWindow" Grid.Row="1" Grid.Column="0"
+                                <RadioButton x:Name="LowPass" Grid.Row="1" Grid.Column="0" GroupName="FilterType"
+                                             IsChecked="{Binding IsUsingLowPass, Mode=TwoWay}" Content="Low pass" />
+                                <RadioButton x:Name="MiddlePass" Grid.Row="2" Grid.Column="0" GroupName="FilterType"
+                                             IsChecked="{Binding IsUsingMiddlePass, Mode=TwoWay}" Content="Middle pass" />
+                                <RadioButton x:Name="HighPass" Grid.Row="3" Grid.Column="0" GroupName="FilterType"
+                                             IsChecked="{Binding IsUsingHighPass, Mode=TwoWay}" Content="High pass" />
+                                <Viewbox Grid.Row="0" Grid.Column="1" Margin="4, 0, 4, 0" Height="24">
+                                    <TextBlock Text="Window" FontWeight="Bold"/>
+                                </Viewbox>
+                                <RadioButton x:Name="RectangularWindow" Grid.Row="1" Grid.Column="1" GroupName="WindowType"
                                              IsChecked="{Binding IsUsingRectangularWindow, Mode=TwoWay}" Content="Rectangular" />
-                                <RadioButton x:Name="HannWindow" Grid.Row="2" Grid.Column="0"
+                                <RadioButton x:Name="HannWindow" Grid.Row="2" Grid.Column="1" GroupName="WindowType"
                                              IsChecked="{Binding IsUsingHannWindow, Mode=TwoWay}" Content="Von Hann" />
-                                <RadioButton x:Name="HammingWindow" Grid.Row="3" Grid.Column="0"
+                                <RadioButton x:Name="HammingWindow" Grid.Row="3" Grid.Column="1" GroupName="WindowType"
                                              IsChecked="{Binding IsUsingHammingWindow, Mode=TwoWay}" Content="Hamming" />
-                                <Viewbox Grid.Row="0" Grid.Column="1" Margin="4, 0, 4, 0" Height="28">
-                                    <TextBlock Text="Parameters" />
+                                <Viewbox Grid.Row="0" Grid.Column="2" Margin="4, 0, 4, 0" Height="24">
+                                    <TextBlock Text="Parameters" FontWeight="Bold"/>
                                 </Viewbox>
-                                <RelativePanel Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" Margin="2,4,2,4">
+                                <RelativePanel Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" Margin="2,4,2,4">
                                     <Viewbox RelativePanel.AlignLeftWithPanel="True" RelativePanel.LeftOf="MValue" RelativePanel.AlignVerticalCenterWithPanel="True">
                                         <TextBlock Text="Window length" VerticalAlignment="Center"/>
                                     </Viewbox>
                                     <controls:NumberBox x:Name="MValue" SpinButtonPlacementMode="Compact" RelativePanel.AlignRightWithPanel="True"
                                                         Maximum="44100" Minimum="0" Value="{Binding WindowLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                 </RelativePanel>
-                                <RelativePanel Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" Margin="2,4,2,4">
+                                <RelativePanel Grid.Row="2" Grid.Column="2" HorizontalAlignment="Stretch" Margin="2,4,2,4">
                                     <Viewbox RelativePanel.AlignLeftWithPanel="True"  RelativePanel.LeftOf="RValue" RelativePanel.AlignVerticalCenterWithPanel="True">
                                         <TextBlock Text="Hop size" VerticalAlignment="Center"/>
                                     </Viewbox>
                                     <controls:NumberBox x:Name="RValue" SpinButtonPlacementMode="Compact" RelativePanel.AlignRightWithPanel="True"
                                                         Maximum="44100" Minimum="0" Value="{Binding HopSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                 </RelativePanel>
-                                <RelativePanel Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch" Margin="2,4,2,4">
+                                <RelativePanel Grid.Row="3" Grid.Column="2" HorizontalAlignment="Stretch" Margin="2,4,2,4">
                                     <Viewbox RelativePanel.AlignLeftWithPanel="True" RelativePanel.LeftOf="LValue" RelativePanel.AlignVerticalCenterWithPanel="True">
                                         <TextBlock Text="Filter length" VerticalAlignment="Center" HorizontalAlignment="Left"/>
                                     </Viewbox>
                                     <controls:NumberBox x:Name="LValue" SpinButtonPlacementMode="Compact" RelativePanel.AlignRightWithPanel="True"
                                                         Maximum="44100" Minimum="0" Value="{Binding FilterLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                 </RelativePanel>
-                                <RelativePanel Grid.Row="4" Grid.Column="1" HorizontalAlignment="Stretch" Margin="2,4,2,4">
+                                <RelativePanel Grid.Row="4" Grid.Column="2" HorizontalAlignment="Stretch" Margin="2,4,2,4">
                                     <Viewbox RelativePanel.AlignLeftWithPanel="True" RelativePanel.LeftOf="FcValue" RelativePanel.AlignVerticalCenterWithPanel="True">
                                         <TextBlock VerticalAlignment="Center" Text="Cutoff frequency" HorizontalAlignment="Left"/>
                                     </Viewbox>
                                     <controls:NumberBox x:Name="FcValue" SpinButtonPlacementMode="Compact" RelativePanel.AlignRightWithPanel="True" 
                                                         Maximum="20000" Minimum="0" Value="{Binding CutoffFrequency, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                 </RelativePanel>
-                                <CheckBox Grid.Row="5" Grid.Column="0" Content="Use causal filter" IsChecked="{Binding IsUsingCausalFilter, Mode=TwoWay}" />
-                                <Button x:Name="RunFilter" Content="Run" Command="{Binding FilterCommand}" Grid.Row="5" Grid.Column="1"
-                                        HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                                <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Content="Use causal filter" HorizontalAlignment="Center"
+                                          IsChecked="{Binding IsUsingCausalFilter, Mode=TwoWay}" />
+                                <Button x:Name="RunFilter" Content="Run" Command="{Binding FilterCommand}" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="128"/>
                             </Grid>
                         </Flyout>
                     </FlyoutBase.AttachedFlyout>
