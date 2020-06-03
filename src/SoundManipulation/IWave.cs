@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SoundManipulation.Filtering;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Numerics;
@@ -37,5 +38,6 @@ namespace SoundManipulation
         decimal? AMDF(double accuracy);
         decimal? CepstralAnalysis(double accuracy);
         int? GetIndexOfGlobalMaximum(Func<Complex, double> selector);
+        IWave ApplyFilterByWindowedFourier(IFilter filter, FourierWindow window, int hopSize);
     }
 }

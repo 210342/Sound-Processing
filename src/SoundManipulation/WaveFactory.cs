@@ -26,15 +26,15 @@ namespace SoundManipulation
             return Enumerable.Range(0, windowSize).Select(i => window(i, windowSize)).ToArray();
         }
 
-        public static IWave GetFilter(IFilter filterType, WindowDelegate window, int filterLength, decimal cutoffFrequency, decimal sampleRate)
+        public static IWave GetFilterWave(IFilter filterType, decimal sampleRate)
         {
-            double k = filterType.GetKCoefficient(sampleRate, cutoffFrequency);
-            double[] values = new double[filterLength];
+            double k = filterType.GetKCoefficient(sampleRate, filterType.CutoffFrequency);
+            double[] values = new double[filterType.Length];
 
-            int halfFilterLength = (filterLength - 1) / 2;
+            int halfFilterLength = (filterType.Length - 1) / 2;
             double twoPi = 2 * Math.PI;
 
-            for (int i = 0; i < filterLength; i++)
+            for (int i = 0; i < filterType.Length; i++)
             {
                 if (i == halfFilterLength)
                 {
@@ -44,7 +44,6 @@ namespace SoundManipulation
                 {
                     values[i] = Math.Sin(twoPi * (i - halfFilterLength) / k) / (Math.PI * (i - halfFilterLength));
                 }
-                values[i] *= window(i, filterLength);
                 values[i] *= filterType.GetValue(i - halfFilterLength);
             }
             return new Wave(values, 1 / sampleRate);

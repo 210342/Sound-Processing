@@ -4,6 +4,7 @@ using SoundManipulation.Filtering;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -18,6 +19,8 @@ namespace ViewModels
     public class MainMDIViewModel : ViewModel
     {
         private readonly IDispatcher _dispatcher;
+
+        public IWave SelectedWave => SelectedTab?.Wave?.Value;
 
         #region Observable properties
         public ObservableCollection<TabContentViewModel> Contents { get; } = new ObservableCollection<TabContentViewModel>();
@@ -85,13 +88,13 @@ namespace ViewModels
 
         public async Task CalculatePeriodWithAMDF(int windowSize, double accuracy)
         {
-            if (SelectedTab?.Wave?.Value is null)
+            if (SelectedWave is null)
             {
                 return;
             }
 
             SelectedTab.WindowSize = windowSize;
-            SelectedTab.Wave.Value.FundamentalFrequencies =
+            SelectedWave.FundamentalFrequencies =
                 await Task.Run(() => SelectedTab?.Wave?.Value?.GetFrequencies(
                     nameof(SelectedTab.Wave.Value.AMDF),
                     windowSize,
@@ -101,13 +104,13 @@ namespace ViewModels
 
         public async Task CalculatePeriodWithCepstralAnalysis(int windowSize)
         {
-            if (SelectedTab?.Wave?.Value is null)
+            if (SelectedWave is null)
             {
                 return;
             }
 
             SelectedTab.WindowSize = windowSize;
-            SelectedTab.Wave.Value.FundamentalFrequencies = 
+            SelectedWave.FundamentalFrequencies = 
                 await Task.Run(() => SelectedTab.Wave.Value.GetFrequencies(
                     nameof(SelectedTab.Wave.Value.CepstralAnalysis), 
                     windowSize, 
@@ -115,23 +118,23 @@ namespace ViewModels
                 ));
             
             AddTab(new TitledObject<IWave>(
-                SelectedTab.Wave.Value.FourierTransform,
+                SelectedWave.FourierTransform,
                 $"{SelectedTab.Wave.Title} - Fourier"
             ));
             AddTab(new TitledObject<IWave>(
-                SelectedTab.Wave.Value.WindowedCepstrum,
+                SelectedWave.WindowedCepstrum,
                 $"{SelectedTab.Wave.Title} - Cepstrum"
             ));
         }
 
         public async Task CalculateFourierTransform()
         {
-            if (SelectedTab?.Wave?.Value is null)
+            if (SelectedWave is null)
             {
                 return;
             }
 
-            IWave newWave = await Task.Run(() => SelectedTab.Wave.Value.FourierTransform);
+            IWave newWave = await Task.Run(() => SelectedWave.FourierTransform);
             var newTab = AddTab(new TitledObject<IWave>(
                 newWave,
                 $"{SelectedTab.Wave.Title} - Fourier"
@@ -141,32 +144,40 @@ namespace ViewModels
 
         public async Task ShowSignalWithFrequency()
         {
-            if (SelectedTab?.Wave?.Value?.Period is null)
+            if (SelectedWave?.Period is null)
             {
                 return;
             }
-            IWave current = SelectedTab.Wave.Value;
             IWave baseWave = await Task.Run(() => 
                 WaveFactory.WaveWithFrequency(
-                    Convert.ToDouble(current.Frequency ?? 1),
-                    current.SamplePeriod,
-                    (int)(Math.PI * 2 / (double)(current.SamplePeriod))
+                    Convert.ToDouble(SelectedWave.Frequency ?? 1),
+                    SelectedWave.SamplePeriod,
+                    (int)(Math.PI * 2 / (double)(SelectedWave.SamplePeriod))
                 )
             );
-            var newTab = AddTab(new TitledObject<IWave>(baseWave, $"Basic wave {(int)current.Frequency} Hz"));
+            var newTab = AddTab(new TitledObject<IWave>(baseWave, $"Basic wave {(int)SelectedWave.Frequency} Hz"));
             SelectTab(newTab);
         }
 
-        public async Task FilterSignal(IFilter filter, WindowDelegate window, int windowLength, int hopSize)
+        public async Task FilterSignal(IFilter filter, FourierWindow window, int hopSize)
         {
-            if (SelectedTab?.Wave?.Value is null)
+            if (SelectedWave is null)
             {
                 return;
             }
+            Stopwatch stopwatch = new Stopwatch();
 
-            // TODO:
             // filter by convolution
+            stopwatch.Start();
+            IWave convolutionFiltered = await Task.Run(() => SelectedWave.Convolve(WaveFactory.GetFilterWave(filter, SelectedWave.SampleRate)));
+            stopwatch.Stop();
+            AddTab(new TitledObject<IWave>(convolutionFiltered, $"{SelectedTab.Wave.Title} filtered by convolution: {stopwatch.ElapsedMilliseconds} ms"));
+
             // filter by fourier
+            stopwatch.Restart();
+            IWave fourierFiltered = await Task.Run(() => SelectedWave.ApplyFilterByWindowedFourier(filter, window, hopSize));
+            stopwatch.Stop();
+            AddTab(new TitledObject<IWave>(fourierFiltered, $"{SelectedTab.Wave.Title} filtered by Fourier: {stopwatch.ElapsedMilliseconds} ms"));
         }
 
         private TabContentViewModel AddTab(TitledObject<IWave> wave)

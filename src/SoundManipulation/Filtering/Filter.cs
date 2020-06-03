@@ -6,13 +6,13 @@ namespace SoundManipulation.Filtering
 {
     public abstract class Filter : IFilter
     {
-        public int FilterLength { get; }
+        public int Length { get; }
         public bool IsCausal { get; }
         public int CutoffFrequency { get; }
 
         public Filter(int filterLength, int cutoffFrequency, bool isCausal)
         {
-            FilterLength = filterLength;
+            Length = filterLength;
             CutoffFrequency = cutoffFrequency;
             IsCausal = isCausal;
         }

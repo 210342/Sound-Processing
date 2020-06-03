@@ -254,7 +254,7 @@ namespace ViewModels
 
         public Task ShowBaseFrequencySignal() => MainMDIViewModel?.ShowSignalWithFrequency();
 
-        public Task Filter() => MainMDIViewModel?.FilterSignal(GetFilterType(), GetWindowType(), _windowLength, _hopSize);
+        public Task Filter() => MainMDIViewModel?.FilterSignal(GetFilterType(), GetWindow(), _hopSize);
 
         private async Task Job(Func<Task> job)
         {
@@ -285,19 +285,19 @@ namespace ViewModels
             }
         }
 
-        private WindowDelegate GetWindowType()
+        private FourierWindow GetWindow()
         {
             if (IsUsingHammingWindow)
             {
-                return WindowFunctions.Hamming;
+                return new FourierWindow(FourierWindow.Hamming, _windowLength);
             }
             else if(IsUsingHannWindow)
             {
-                return WindowFunctions.VonHann;
+                return new FourierWindow(FourierWindow.VonHann, _windowLength);
             }
             else
             {
-                return WindowFunctions.Rectangular;
+                return new FourierWindow(FourierWindow.Rectangular, _windowLength);
             }
         }
 

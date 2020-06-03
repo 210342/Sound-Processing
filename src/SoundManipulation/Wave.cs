@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Reflection;
 using MathNet.Numerics;
+using SoundManipulation.Filtering;
 
 namespace SoundManipulation
 {
@@ -101,6 +102,8 @@ namespace SoundManipulation
 
         #region API
 
+        #region Operations
+
         public IWave Calculate(IWave other, Func<Complex, Complex, Complex> operation) =>
             new Wave(other.Samples.Zip(Samples, operation), SamplePeriod);
 
@@ -140,6 +143,10 @@ namespace SoundManipulation
             }
             return new Wave(values, SamplePeriod);
         }
+
+        #endregion
+
+        #region Frequency analysis
 
         public IEnumerable<decimal?> GetFrequencies(string methodName, int windowSize, double accuracy)
         {
@@ -223,6 +230,10 @@ namespace SoundManipulation
             return max;
         }
 
+        #endregion
+
+        #region Fourier
+
         public IWave CalculateFourierTransform()
         {
             Complex[] newArray = _samples.ToArray();
@@ -247,6 +258,26 @@ namespace SoundManipulation
             );
         }
 
+        #endregion
+
+        #region Filters
+
+        public IWave ApplyFilterByWindowedFourier(IFilter filter, FourierWindow window, int hopSize)
+        {
+            Wave filterWave = WaveFactory.GetFilterWave(filter, SampleRate) as Wave;
+            int fourierLength = filter.Length + window.Length - 1;
+            filterWave = filterWave.ExtendWaveToLengthByAppendingZeros(fourierLength, filter.IsCausal);
+            IEnumerable<Wave> windows = CutIntoWindows(window, hopSize)
+                .Select(w => w.ExtendWaveToLengthByAppendingZeros(fourierLength, filter.IsCausal));
+            var filteredFouriers = windows.Select(w => w.FourierTransform).Select(f => f.Multiply(filterWave.FourierTransform));
+            var filteredWindows = filteredFouriers.Select(f => f.CalculateInverseFourierTransform()).OfType<Wave>();
+            return MergeWindowsWithShift(filteredWindows, hopSize);
+        }
+
+        #endregion
+
+        #region IO
+
         public static async Task<Wave> ReadFromStreamAsync(Stream stream)
         {
             using (WaveFileReader reader = new WaveFileReader(stream))
@@ -269,6 +300,10 @@ namespace SoundManipulation
 
         #endregion
 
+        #endregion
+
+        #region Protected methods
+
         protected internal int GetCeilingPowerExponent()
         {
             double exponent = Math.Log(_samples.Length, 2);
@@ -282,5 +317,44 @@ namespace SoundManipulation
                 .Concat(Samples.Take((int)(Math.Pow(2, integerExponent) + 0.001) - _samples.Length))
                 .ToArray();
         }
+
+        protected internal IEnumerable<Wave> CutIntoWindows(FourierWindow window, int hopSize)
+        {
+            IList<Wave> windows = new List<Wave>();
+            for (int i = 0; i < SamplesCount - window.Length; i += hopSize)
+            {
+                windows.Add(new Wave(_samples.AsSpan(i, window.Length).ToArray(), SamplePeriod));
+            }
+            return windows;
+        }
+
+        protected internal Wave ExtendWaveToLengthByAppendingZeros(int newSize, bool isCausal)
+        {
+            Complex[] newSamples = new Complex[newSize];
+            int hop = isCausal ? 0 : (int)((newSize - 1) / 2 + 0.5);
+            for (int i = 0; i < newSize; ++i)
+            {
+                newSamples[i] = _samples[(hop + i) % SamplesCount];
+            }
+            return new Wave(newSamples, SamplePeriod);
+        }
+
+        protected internal static Wave MergeWindowsWithShift(IEnumerable<Wave> windows, int shift)
+        {
+            int outputLength = windows.Count() * shift + windows.FirstOrDefault().SamplesCount - shift;
+            Complex[] outputSamples = new Complex[outputLength];
+            int hop = 0;
+            foreach (Wave window in windows)
+            {
+                for (int i = 0; i < window.SamplesCount; ++i)
+                {
+                    outputSamples[hop + i] += window._samples[i];
+                }
+                hop += shift;
+            }
+            return new Wave(outputSamples, windows.FirstOrDefault().SamplePeriod);
+        }
+
+        #endregion
     }
 }

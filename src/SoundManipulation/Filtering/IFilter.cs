@@ -6,7 +6,7 @@ namespace SoundManipulation.Filtering
 {
     public interface IFilter
     {
-        int FilterLength { get; }
+        int Length { get; }
         bool IsCausal { get; }
         int CutoffFrequency { get; }
 
