@@ -165,19 +165,35 @@ namespace ViewModels
             {
                 return;
             }
-            Stopwatch stopwatch = new Stopwatch();
-
+            string baseTitle = SelectedTab.Wave.Title;
             // filter by convolution
-            /*stopwatch.Start();
-            IWave convolutionFiltered = await Task.Run(() => SelectedWave.Convolve(WaveFactory.GetFilterWave(filter, SelectedWave.SampleRate)));
-            stopwatch.Stop();
-            AddTab(new TitledObject<IWave>(convolutionFiltered, $"{SelectedTab.Wave.Title} filtered by convolution: {stopwatch.ElapsedMilliseconds} ms"));*/
+            Task convolutionFiltered = Task.Factory.StartNew(async () =>
+            {
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+                IWave wave = SelectedWave.Convolve(WaveFactory.GetFilterWave(filter, SelectedWave.SampleRate));
+                stopwatch.Stop();
+                await _dispatcher.RunAsync(() =>
+                {
+                    AddTab(new TitledObject<IWave>(wave, $"{baseTitle} filtered by convolution: {stopwatch.ElapsedMilliseconds} ms"));
+                    return Task.CompletedTask;
+                });
+            }).Unwrap();
 
             // filter by fourier
-            stopwatch.Restart();
-            IWave fourierFiltered = await Task.Run(() => SelectedWave.ApplyFilterByWindowedFourier(filter, window, hopSize));
-            stopwatch.Stop();
-            AddTab(new TitledObject<IWave>(fourierFiltered, $"{SelectedTab.Wave.Title} filtered by Fourier: {stopwatch.ElapsedMilliseconds} ms"));
+            Task fourierFiltered = Task.Factory.StartNew(async () =>
+            {
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+                IWave wave = SelectedWave.ApplyFilterByWindowedFourier(filter, window, hopSize);
+                stopwatch.Stop();
+                await _dispatcher.RunAsync(() =>
+                {
+                    AddTab(new TitledObject<IWave>(wave, $"{baseTitle} filtered by Fourier: {stopwatch.ElapsedMilliseconds} ms"));
+                    return Task.CompletedTask;
+                });
+            }).Unwrap();
+            await Task.WhenAll(convolutionFiltered, fourierFiltered);
         }
 
         private TabContentViewModel AddTab(TitledObject<IWave> wave)

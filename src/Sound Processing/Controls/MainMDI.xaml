@@ -13,7 +13,10 @@
 
     <UserControl.Resources>
         <DataTemplate x:Key="TabContent" x:DataType="vm:TabContentViewModel">
-            <muxc:TabViewItem ToolTipService.ToolTip="{Binding Wave.Title, Mode=OneWay}">
+            <muxc:TabViewItem>
+                <ToolTipService.ToolTip>
+                    <TextBlock Text="{Binding Wave.Title}" />
+                </ToolTipService.ToolTip>
                 <muxc:TabViewItem.Content>
                     <local:TabContentView />
                 </muxc:TabViewItem.Content>
