@@ -40,9 +40,7 @@ namespace SoundManipulation
             {
                 if (_fourierTransform is null)
                 {
-                    _fourierTransform = new Wave(
-                        CalculateFourierTransform().Samples.Select(c => new Complex(Math.Log10(c.Magnitude), c.Phase)), SamplePeriod
-                    );
+                    _fourierTransform = CalculateFourierTransform();
                 }
                 return _fourierTransform;
             }
@@ -58,7 +56,7 @@ namespace SoundManipulation
         private decimal? _period;
         public decimal? Period 
         { 
-            get { return _period; }
+            get => _period;
             set
             {
                 _period = value;
@@ -74,6 +72,7 @@ namespace SoundManipulation
             set
             {
                 _fundamentalFrequencies = value;
+                Period = Period ?? 1 / value.FirstOrDefault();
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FundamentalFrequencies)));
             }
         }
@@ -332,9 +331,9 @@ namespace SoundManipulation
         {
             Complex[] newSamples = new Complex[newSize];
             int hop = isCausal ? 0 : (int)((newSize - 1) / 2 + 0.5);
-            for (int i = 0; i < newSize; ++i)
+            for (int i = 0; i < SamplesCount; ++i)
             {
-                newSamples[i] = _samples[(hop + i) % SamplesCount];
+                newSamples[(hop + i) % newSize] = _samples[i];
             }
             return new Wave(newSamples, SamplePeriod);
         }

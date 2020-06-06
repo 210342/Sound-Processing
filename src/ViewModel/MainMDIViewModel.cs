@@ -168,10 +168,10 @@ namespace ViewModels
             Stopwatch stopwatch = new Stopwatch();
 
             // filter by convolution
-            stopwatch.Start();
+            /*stopwatch.Start();
             IWave convolutionFiltered = await Task.Run(() => SelectedWave.Convolve(WaveFactory.GetFilterWave(filter, SelectedWave.SampleRate)));
             stopwatch.Stop();
-            AddTab(new TitledObject<IWave>(convolutionFiltered, $"{SelectedTab.Wave.Title} filtered by convolution: {stopwatch.ElapsedMilliseconds} ms"));
+            AddTab(new TitledObject<IWave>(convolutionFiltered, $"{SelectedTab.Wave.Title} filtered by convolution: {stopwatch.ElapsedMilliseconds} ms"));*/
 
             // filter by fourier
             stopwatch.Restart();

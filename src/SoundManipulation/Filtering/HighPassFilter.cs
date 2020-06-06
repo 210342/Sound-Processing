@@ -12,9 +12,6 @@ namespace SoundManipulation.Filtering
         public override double GetKCoefficient(decimal sampleRate, decimal cutoffFrequency)
             => Convert.ToDouble(sampleRate / (sampleRate / 2 - cutoffFrequency));
 
-        public override double GetValue(int sampleIndex)
-        {
-            throw new NotImplementedException();
-        }
+        public override double GetValue(int sampleIndex) => (sampleIndex & 0x01) == 0 ? 1 : -1;
     }
 }

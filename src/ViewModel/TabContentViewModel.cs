@@ -108,11 +108,11 @@ namespace ViewModels
 
         private void GenerateCharts(IWave wave, int maxSamplesCount)
         {
-            IEnumerable<double> horizontal = wave.HorizontalAxis.Take(maxSamplesCount);
-            Charts[REAL] = new ChartData(horizontal, wave.Real.Take(maxSamplesCount), REAL);
-            Charts[IMAGINARY] = new ChartData(horizontal, wave.Imaginary.Take(maxSamplesCount), IMAGINARY);
-            Charts[MAGNITUDE] = new ChartData(horizontal, wave.Magnitude.Take(maxSamplesCount), MAGNITUDE);
-            Charts[PHASE] = new ChartData(horizontal, wave.Phase.Take(maxSamplesCount), PHASE);
+            IEnumerable<double> horizontal = wave.HorizontalAxis.Where((sample, index) => index % 8 == 0).Take(maxSamplesCount);
+            Charts[REAL] = new ChartData(horizontal, wave.Real.Where((sample, index) => index % 8 == 0).Take(maxSamplesCount), REAL);
+            Charts[IMAGINARY] = new ChartData(horizontal, wave.Imaginary.Where((sample, index) => index % 8 == 0).Take(maxSamplesCount), IMAGINARY);
+            Charts[MAGNITUDE] = new ChartData(horizontal, wave.Magnitude.Where((sample, index) => index % 8 == 0).Take(maxSamplesCount), MAGNITUDE);
+            Charts[PHASE] = new ChartData(horizontal, wave.Phase.Where((sample, index) => index % 8 == 0).Take(maxSamplesCount), PHASE);
             IsUsingRealAndImaginary = !wave.IsComplex;
             OnPropertyChanged(nameof(TopChart));
             OnPropertyChanged(nameof(BottomChart));
@@ -120,8 +120,7 @@ namespace ViewModels
 
         private void FrequencyChanged(string property)
         {
-            if (property.Equals(nameof(Wave.Value.Frequency)) 
-                || property.Equals(nameof(Wave.Value.FundamentalFrequencies)))
+            if (property.Equals(nameof(Wave.Value.FundamentalFrequencies)))
             {
                 _dispatcher.RunAsync(() =>
                 {
@@ -133,7 +132,6 @@ namespace ViewModels
                             Wave.Value.FundamentalFrequencies,
                             (i, f) => new Window(i * windowLength, (i + 1) * windowLength, f)
                         );
-                    GenerateCharts(Wave.Value, (int)(2 * period / Wave.Value.SamplePeriod) + 1);
                     return Task.CompletedTask;
                 });
             }
