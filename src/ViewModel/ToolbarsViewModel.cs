@@ -180,7 +180,7 @@ namespace ViewModels
             }
         }
 
-        private int _windowLength = 33;
+        private int _windowLength = 32;
         public double WindowLength
         {
             get => _windowLength;
@@ -191,7 +191,7 @@ namespace ViewModels
             }
         }
 
-        private int _filterLength = 63;
+        private int _filterLength = 33;
         public double FilterLength
         {
             get => _filterLength;
@@ -213,7 +213,7 @@ namespace ViewModels
             }
         }
 
-        private int _cutoffFrequency = 420;
+        private int _cutoffFrequency = 2500;
         public double CutoffFrequency
         {
             get => _cutoffFrequency;
