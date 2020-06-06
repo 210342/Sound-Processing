@@ -229,6 +229,18 @@ namespace SoundManipulation
             return max;
         }
 
+        public IWave GenerateWaveOfFundamentalFrequencies(int windowSize)
+        {
+            var waves = FundamentalFrequencies
+                .Select((f, i) => WaveFactory.WaveWithFrequency(
+                    Real.Skip(i * windowSize).Take(windowSize),
+                    (double?)f,
+                    SamplePeriod,
+                    windowSize
+                ));
+            return new Wave(waves.SelectMany(wave => wave.Samples.Select(c => c.Real)), SamplePeriod);
+        }
+
         #endregion
 
         #region Fourier

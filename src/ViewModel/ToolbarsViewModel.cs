@@ -252,7 +252,7 @@ namespace ViewModels
 
         public Task Fourier() => MainMDIViewModel?.CalculateFourierTransform();
 
-        public Task ShowBaseFrequencySignal() => MainMDIViewModel?.ShowSignalWithFrequency();
+        public Task ShowBaseFrequencySignal() => MainMDIViewModel?.ShowSignalWithFundamentalFrequencies(GetSelectedWindowSize());
 
         public Task Filter() => MainMDIViewModel?.FilterSignal(GetFilterType(), GetWindow(), _hopSize);
 
