@@ -13,7 +13,7 @@ namespace SoundProcessing.Converters
         {
             string formatString = parameter?.ToString();
             return value is null || string.IsNullOrEmpty(formatString)
-                ? string.Empty
+                ? "NULL"
                 : string.Format(formatString, value);
         }
 

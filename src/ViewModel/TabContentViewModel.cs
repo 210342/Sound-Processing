@@ -47,9 +47,27 @@ namespace ViewModels
             }
         }
 
-        public string FrequencyLabel => Wave.Value.FundamentalFrequencies.Any()
-            ? string.Join("; ", Wave.Value.FundamentalFrequencies.Select(f => string.Format("{0:N2} Hz", f)))
-            : string.Format("{0:N2} Hz", Wave.Value.Frequency);
+        private int _windowSize;
+        public int WindowSize
+        {
+            get => _windowSize;
+            set
+            {
+                _windowSize = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private IEnumerable<Window> _windows = Enumerable.Empty<Window>();
+        public IEnumerable<Window> Windows
+        {
+            get => _windows;
+            set
+            {
+                _windows = value;
+                OnPropertyChanged();
+            }
+        }
 
         public ChartData TopChart => Charts[IsUsingRealAndImaginary ? REAL : MAGNITUDE];
         public ChartData BottomChart => Charts[IsUsingRealAndImaginary ? IMAGINARY : PHASE];
@@ -90,13 +108,11 @@ namespace ViewModels
 
         private void GenerateCharts(IWave wave, int maxSamplesCount)
         {
-            IEnumerable<double> horizontal = Enumerable
-                .Range(0, maxSamplesCount)
-                .Select(i => wave.IsComplex ? (double)(i * wave.SampleRate / maxSamplesCount) : (double)(i * wave.SamplePeriod));
-            Charts[REAL] = new ChartData(horizontal, wave.Real.Take(maxSamplesCount), REAL);
-            Charts[IMAGINARY] = new ChartData(horizontal, wave.Imaginary.Take(maxSamplesCount), IMAGINARY);
-            Charts[MAGNITUDE] = new ChartData(horizontal, wave.Magnitude.Take(maxSamplesCount), MAGNITUDE);
-            Charts[PHASE] = new ChartData(horizontal, wave.Phase.Take(maxSamplesCount), PHASE);
+            IEnumerable<double> horizontal = wave.HorizontalAxis.Where((sample, index) => index % 8 == 0).Take(maxSamplesCount);
+            Charts[REAL] = new ChartData(horizontal, wave.Real.Where((sample, index) => index % 8 == 0).Take(maxSamplesCount), REAL);
+            Charts[IMAGINARY] = new ChartData(horizontal, wave.Imaginary.Where((sample, index) => index % 8 == 0).Take(maxSamplesCount), IMAGINARY);
+            Charts[MAGNITUDE] = new ChartData(horizontal, wave.Magnitude.Where((sample, index) => index % 8 == 0).Take(maxSamplesCount), MAGNITUDE);
+            Charts[PHASE] = new ChartData(horizontal, wave.Phase.Where((sample, index) => index % 8 == 0).Take(maxSamplesCount), PHASE);
             IsUsingRealAndImaginary = !wave.IsComplex;
             OnPropertyChanged(nameof(TopChart));
             OnPropertyChanged(nameof(BottomChart));
@@ -104,13 +120,18 @@ namespace ViewModels
 
         private void FrequencyChanged(string property)
         {
-            if (property.Equals(nameof(Wave.Value.Frequency)) 
-                || property.Equals(nameof(Wave.Value.FundamentalFrequencies)))
+            if (property.Equals(nameof(Wave.Value.FundamentalFrequencies)))
             {
                 _dispatcher.RunAsync(() =>
                 {
-                    GenerateCharts(Wave.Value, (int)(2 * Wave.Value.Period / Wave.Value.SamplePeriod) + 1);
-                    OnPropertyChanged(nameof(FrequencyLabel));
+                    decimal windowLength = Wave.Value.SamplePeriod * WindowSize;
+                    decimal period = Wave.Value.Period ?? (1 / Wave.Value.FundamentalFrequencies.Where(f => f.HasValue).FirstOrDefault() ?? 1);
+                    Windows = Enumerable
+                        .Range(0, Wave.Value.FundamentalFrequencies.Count())
+                        .Zip(
+                            Wave.Value.FundamentalFrequencies,
+                            (i, f) => new Window(i * windowLength, (i + 1) * windowLength, f)
+                        );
                     return Task.CompletedTask;
                 });
             }

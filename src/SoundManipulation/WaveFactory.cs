@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SoundManipulation.Filtering;
+using System;
 using System.Linq;
 
 namespace SoundManipulation
@@ -18,6 +19,34 @@ namespace SoundManipulation
             {
                 Period = Convert.ToDecimal(1 / frequency)
             };
+        }
+
+        public static double[] GetWindowValues(WindowDelegate window, int windowSize)
+        {
+            return Enumerable.Range(0, windowSize).Select(i => window(i, windowSize)).ToArray();
+        }
+
+        public static IWave GetFilterWave(IFilter filterType, decimal sampleRate)
+        {
+            double k = filterType.GetKCoefficient(sampleRate, filterType.CutoffFrequency);
+            double[] values = new double[filterType.Length];
+
+            int halfFilterLength = (filterType.Length - 1) / 2;
+            double twoPi = 2 * Math.PI;
+
+            for (int i = 0; i < filterType.Length; i++)
+            {
+                if (i == halfFilterLength)
+                {
+                    values[i] = 2.0 / k;
+                }
+                else
+                {
+                    values[i] = Math.Sin(twoPi * (i - halfFilterLength) / k) / (Math.PI * (i - halfFilterLength));
+                }
+                values[i] *= filterType.GetValue(i - halfFilterLength);
+            }
+            return new Wave(values, 1 / sampleRate);
         }
     }
 }
