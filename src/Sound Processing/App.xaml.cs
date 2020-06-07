@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SoundProcessing.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,6 +9,7 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -31,6 +33,7 @@ namespace SoundProcessing
         {
             this.InitializeComponent();
             this.Suspending += OnSuspending;
+            this.UnhandledException += OnException;
         }
 
         /// <summary>
@@ -93,7 +96,19 @@ namespace SoundProcessing
         {
             var deferral = e.SuspendingOperation.GetDeferral();
             //TODO: Save application state and stop any background activity
+            ViewModelLocator.Container.Value.Dispose();
             deferral.Complete();
+        }
+
+        private async void OnException(object sender, Windows.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            e.Handled = true;
+            var dialog = new MessageDialog(e.Message, "Unhandled exception")
+            {
+                Options = MessageDialogOptions.AcceptUserInputAfterDelay
+            };
+            dialog.Commands.Add(new UICommand("OK"));
+            await dialog.ShowAsync();
         }
     }
 }

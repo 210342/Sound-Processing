@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,5 +40,7 @@ namespace SoundManipulation
         decimal? CepstralAnalysis(double accuracy);
         int? GetIndexOfGlobalMaximum(Func<Complex, double> selector);
         IWave ApplyFilterByWindowedFourier(IFilter filter, FourierWindow window, int hopSize);
+        IWave GenerateWaveOfFundamentalFrequencies(int windowSize);
+        Task WriteToStreamAsync(Stream stream);
     }
 }

@@ -3,6 +3,7 @@ using NAudio.Wave;
 using SoundManipulation.Filtering;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -12,7 +13,7 @@ using ViewModels.DependencyInjection;
 
 namespace ViewModels
 {
-    public class ToolbarsViewModel : ViewModel
+    public class ToolbarsViewModel : ViewModel, IDisposable
     {
         private readonly IDispatcher _dispatcher;
         private readonly Queue<bool> _jobs = new Queue<bool>();
@@ -214,6 +215,7 @@ namespace ViewModels
         }
 
         private int _cutoffFrequency = 2500;
+
         public double CutoffFrequency
         {
             get => _cutoffFrequency;
@@ -232,9 +234,10 @@ namespace ViewModels
         {
             Name = nameof(ToolbarsViewModel);
             MainMDIViewModel = mdi;
+            mdi.PropertyChanged += OnMdiPropertyChanged;
             _dispatcher = dispatcher;
             OpenCommand = new AsyncCommand(() => Job(Open));
-            SaveCommand = new AsyncCommand(() => Job(Save));
+            SaveCommand = new AsyncCommand(() => Job(Save), o => CanSave());
             AMDFCommand = new AsyncCommand(() => Job(AMDF));
             CepstralCommand = new AsyncCommand(() => Job(Cepstral));
             FourierCommand = new AsyncCommand(() => Job(Fourier));
@@ -244,6 +247,7 @@ namespace ViewModels
 
         public Task Open() => MainMDIViewModel?.OpenSoundFile();
 
+        public bool CanSave() => MainMDIViewModel?.CanSaveCurrentSound() ?? false;
         public Task Save() => MainMDIViewModel?.SaveCurrentSound();
 
         public Task AMDF() => MainMDIViewModel?.CalculatePeriodWithAMDF(GetSelectedWindowSize(), Accuracy);
@@ -252,7 +256,7 @@ namespace ViewModels
 
         public Task Fourier() => MainMDIViewModel?.CalculateFourierTransform();
 
-        public Task ShowBaseFrequencySignal() => MainMDIViewModel?.ShowSignalWithFrequency();
+        public Task ShowBaseFrequencySignal() => MainMDIViewModel?.ShowSignalWithFundamentalFrequencies(GetSelectedWindowSize());
 
         public Task Filter() => MainMDIViewModel?.FilterSignal(GetFilterType(), GetWindow(), _hopSize);
 
@@ -316,5 +320,31 @@ namespace ViewModels
                 return new MiddlePassFilter(_filterLength, _cutoffFrequency, IsUsingCausalFilter);
             }
         }
+
+        private void OnMdiPropertyChanged(object sender, PropertyChangedEventArgs args)
+            => RaiseCanExecuteChanged();
+
+        #region IDisposable
+
+        private bool disposedValue;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    MainMDIViewModel.PropertyChanged -= OnMdiPropertyChanged;
+                }
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
     }
 }

@@ -64,18 +64,16 @@ namespace ViewModels
             IOController = controller;
         }
 
-        public Task SaveCurrentSound()
-        {
-            return IOController?.SaveSoundFile();
-        }
+        public bool? CanSaveCurrentSound() => IOController?.CanSaveSoundFile(SelectedWave);
+
+        public Task SaveCurrentSound() => IOController?.SaveSoundFile(SelectedWave);
 
         public async Task OpenSoundFile()
         {
             TitledObject<IWave> wave = await IOController?.OpenSoundFile();
             if (wave != null)
             {
-                SelectedTab = AddTab(wave);
-                SelectedIndex = Contents.Count - 1;
+                SelectTab(AddTab(wave));
             }
         }
 
@@ -142,20 +140,15 @@ namespace ViewModels
             SelectTab(newTab);
         }
 
-        public async Task ShowSignalWithFrequency()
+        public async Task ShowSignalWithFundamentalFrequencies(int windowSize)
         {
-            if (SelectedWave?.Period is null)
+            if (SelectedWave?.FundamentalFrequencies is null
+                || !(SelectedWave?.FundamentalFrequencies.Any() ?? false))
             {
                 return;
             }
-            IWave baseWave = await Task.Run(() => 
-                WaveFactory.WaveWithFrequency(
-                    Convert.ToDouble(SelectedWave.Frequency ?? 1),
-                    SelectedWave.SamplePeriod,
-                    (int)(Math.PI * 2 / (double)(SelectedWave.SamplePeriod))
-                )
-            );
-            var newTab = AddTab(new TitledObject<IWave>(baseWave, $"Basic wave {(int)SelectedWave.Frequency} Hz"));
+            IWave fundamentalWave = await Task.Run(() => SelectedWave.GenerateWaveOfFundamentalFrequencies(windowSize));
+            var newTab = AddTab(new TitledObject<IWave>(fundamentalWave, $"Fundamental wave of {SelectedTab.Wave.Title}"));
             SelectTab(newTab);
         }
 

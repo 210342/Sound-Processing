@@ -1,21 +1,40 @@
 ﻿using SoundManipulation.Filtering;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SoundManipulation
 {
     public static class WaveFactory
     {
-        public static IWave WaveWithFrequency(double frequency, decimal samplePeriod, int sampleCount)
+        public static IWave WaveWithFrequency(double? frequency, decimal samplePeriod, int sampleCount)
             => WaveWithFrequency(frequency, (double)samplePeriod, sampleCount);
 
-        public static IWave WaveWithFrequency(double frequency, double samplePeriod, int sampleCount)
+        public static IWave WaveWithFrequency(double? frequency, double samplePeriod, int sampleCount)
         {
             double twoPi = 2 * Math.PI;
-            var samples = Enumerable
-                .Range(0, sampleCount)
-                .Select(i => Math.Sin(i * samplePeriod * twoPi * frequency));
+            var samples = frequency.HasValue
+                ? Enumerable
+                    .Range(0, sampleCount)
+                    .Select(i => Math.Sin(i * samplePeriod * twoPi * frequency.Value))
+                : Enumerable.Repeat(0.0, sampleCount);
             return new Wave(samples, Convert.ToDecimal(samplePeriod))
+            {
+                Period = Convert.ToDecimal(1 / frequency)
+            };
+        }
+
+        public static IWave WaveWithFrequency(IEnumerable<double> samples, double? frequency, decimal samplePeriod, int sampleCount)
+            => WaveWithFrequency(samples, frequency, (double)samplePeriod, sampleCount);
+
+        public static IWave WaveWithFrequency(IEnumerable<double> samples, double? frequency, double samplePeriod, int sampleCount)
+        {
+            double twoPi = 2 * Math.PI;
+            var newSamples = frequency.HasValue
+                ? samples
+                    .Select((s, i) => s * Math.Sin(i * samplePeriod * twoPi * frequency.Value))
+                : Enumerable.Repeat(0.0, sampleCount);
+            return new Wave(newSamples, Convert.ToDecimal(samplePeriod))
             {
                 Period = Convert.ToDecimal(1 / frequency)
             };
