@@ -20,20 +20,32 @@ namespace ViewModels.Controllers
             _openFileDialog = open;
         }
 
-        public bool CanSaveSoundFile() => _saveFileDialog != null;
-        public async Task SaveSoundFile() { await Task.CompletedTask; }
+        public bool CanSaveSoundFile(IWave wave) => _saveFileDialog != null && wave != null;
+
+        public async Task SaveSoundFile(IWave wave)
+        {
+            if (!CanSaveSoundFile(wave)
+                || !await _saveFileDialog.OpenDialogAsync())
+            {
+                return;
+            }
+
+            using (Stream stream = await _saveFileDialog.GetFileStreamAsync())
+            {
+                await wave.WriteToStreamAsync(stream);
+            }
+        }
+
         public bool CanOpenSoundFile() => _openFileDialog != null;
+
         public async Task<TitledObject<IWave>> OpenSoundFile()
         {
-            if (!CanOpenSoundFile())
+            if (!CanOpenSoundFile()
+                || !await _openFileDialog.OpenDialogAsync())
             {
                 return null;
             }
 
-            if (!await _openFileDialog.OpenDialogAsync())
-            {
-                return null;
-            }
             using (Stream stream = await _openFileDialog.GetFileStreamAsync())
             {
                 return new TitledObject<IWave>(await Wave.ReadFromStreamAsync(stream), _openFileDialog.Name);

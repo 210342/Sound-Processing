@@ -9,8 +9,8 @@ namespace ViewModels.Controllers
 {
     public interface IIOSoundController
     {
-        bool CanSaveSoundFile();
-        Task SaveSoundFile();
+        bool CanSaveSoundFile(IWave wave);
+        Task SaveSoundFile(IWave wave);
         bool CanOpenSoundFile();
         Task<TitledObject<IWave>> OpenSoundFile();
     }

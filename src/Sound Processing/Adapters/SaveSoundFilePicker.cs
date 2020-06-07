@@ -30,7 +30,7 @@ namespace SoundProcessing.Adapters
         public async Task<bool> OpenDialogAsync()
         {
             _file = await _picker.PickSaveFileAsync();
-            return _file.IsAvailable;
+            return _file?.IsAvailable ?? false;
         }
 
         public async Task<Stream> GetFileStreamAsync()

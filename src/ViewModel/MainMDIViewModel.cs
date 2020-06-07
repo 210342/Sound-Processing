@@ -64,18 +64,16 @@ namespace ViewModels
             IOController = controller;
         }
 
-        public Task SaveCurrentSound()
-        {
-            return IOController?.SaveSoundFile();
-        }
+        public bool? CanSaveCurrentSound() => IOController?.CanSaveSoundFile(SelectedWave);
+
+        public Task SaveCurrentSound() => IOController?.SaveSoundFile(SelectedWave);
 
         public async Task OpenSoundFile()
         {
             TitledObject<IWave> wave = await IOController?.OpenSoundFile();
             if (wave != null)
             {
-                SelectedTab = AddTab(wave);
-                SelectedIndex = Contents.Count - 1;
+                SelectTab(AddTab(wave));
             }
         }
 

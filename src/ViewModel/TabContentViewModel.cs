@@ -1,5 +1,7 @@
 ﻿using SoundManipulation;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using ViewModels.DependencyInjection;
@@ -7,7 +9,7 @@ using ViewModels.Model;
 
 namespace ViewModels
 {
-    public class TabContentViewModel : ViewModel
+    public class TabContentViewModel : ViewModel, IDisposable
     {
         private readonly IDispatcher _dispatcher;
 
@@ -59,6 +61,7 @@ namespace ViewModels
         }
 
         private IEnumerable<Window> _windows = Enumerable.Empty<Window>();
+
         public IEnumerable<Window> Windows
         {
             get => _windows;
@@ -95,7 +98,7 @@ namespace ViewModels
         {
             _dispatcher = dispatcher;
             Wave = wave;
-            wave.Value.PropertyChanged += (sender, args) => FrequencyChanged(args.PropertyName);
+            wave.Value.PropertyChanged += OnWavePropertyChanged;
         }
 
         private void GenerateCharts(IWave wave) => 
@@ -118,8 +121,9 @@ namespace ViewModels
             OnPropertyChanged(nameof(BottomChart));
         }
 
-        private void FrequencyChanged(string property)
+        private void OnWavePropertyChanged(object sender, PropertyChangedEventArgs args)
         {
+            string property = args.PropertyName;
             if (property.Equals(nameof(Wave.Value.FundamentalFrequencies)))
             {
                 _dispatcher.RunAsync(() =>
@@ -136,5 +140,30 @@ namespace ViewModels
                 });
             }
         }
+
+        #region IDisposable
+
+        private bool disposedValue;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    Wave.PropertyChanged -= OnWavePropertyChanged;
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
     }
 }

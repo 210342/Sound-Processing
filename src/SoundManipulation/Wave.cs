@@ -10,6 +10,7 @@ using System.ComponentModel;
 using System.Reflection;
 using MathNet.Numerics;
 using SoundManipulation.Filtering;
+using NAudio.Utils;
 
 namespace SoundManipulation
 {
@@ -307,6 +308,21 @@ namespace SoundManipulation
                 double samplePeriod = reader.TotalTime.TotalSeconds / samples.Length;
                 return new Wave(samples, Convert.ToDecimal(samplePeriod));
             }
+        }
+
+        public async Task WriteToStreamAsync(Stream stream)
+        {
+            await Task.Run(() => 
+            {
+                double maxSample = Real.Max();
+                using (WaveFileWriter writer = new WaveFileWriter(
+                    new IgnoreDisposeStream(stream), 
+                    new WaveFormatExtensible((int)decimal.Round(SampleRate), 16, 1)
+                ))
+                {
+                    writer.WriteSamples(Real.Select(d => Convert.ToSingle(d / maxSample)).ToArray(), 0, SamplesCount);
+                }
+            });
         }
 
         #endregion

@@ -22,7 +22,7 @@
                     <Grid/>
                 </CommandBar.Content>
                 <AppBarButton x:Name="SaveFile" Icon="Save" Label="Save" VerticalAlignment="Stretch" Foreground="White"  FocusVisualPrimaryBrush="White" 
-                              Command="{Binding SaveCommand}" IsEnabled="False"/>
+                              Command="{Binding SaveCommand}"/>
                 <AppBarButton x:Name="LoadFile" Icon="OpenFile" Label="Open" VerticalAlignment="Stretch" Foreground="White" FocusVisualPrimaryBrush="White" 
                               Command="{Binding OpenCommand}"/>
             </CommandBar>
