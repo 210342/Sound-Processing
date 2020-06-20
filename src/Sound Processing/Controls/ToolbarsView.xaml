@@ -139,7 +139,7 @@
                 <AppBarButton x:Name="AmdfButton" Icon="Rotate" Label="AMDF" VerticalAlignment="Stretch" Foreground="White" Flyout="{x:Bind AmdfFlyout}">
                     <FlyoutBase.AttachedFlyout>
                         <Flyout x:Name="AmdfFlyout" Placement="Bottom">
-                            <Grid HorizontalAlignment="Stretch">
+                            <Grid HorizontalAlignment="Stretch" MinWidth="128">
                                 <Grid.Resources>
                                     <Style TargetType="Viewbox">
                                         <Setter Property="Margin" Value="4,4,4,4" />
@@ -149,9 +149,9 @@
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
-                                <Slider Grid.Row="0" HorizontalAlignment="Stretch" Minimum="0" Maximum="0.2" Value="{Binding Accuracy, Mode=TwoWay}" 
-                                    StepFrequency="0.001" Foreground="White" FocusVisualPrimaryBrush="White" Width="{x:Bind AmdfButton.Width}"/>
-                                <Button Grid.Row="1" HorizontalAlignment="Stretch" Content="Run" Command="{Binding AMDFCommand}" Width="{x:Bind AmdfButton.Width}" />
+                                <Slider x:Name="AccuracySlider" Grid.Row="0" HorizontalAlignment="Stretch" Minimum="0" Maximum="0.1" Value="{Binding Accuracy, Mode=TwoWay}" 
+                                    StepFrequency="0.001" Foreground="White" FocusVisualPrimaryBrush="White" />
+                                <Button Grid.Row="1" HorizontalAlignment="Stretch" Content="Run" Command="{Binding AMDFCommand}" Width="{x:Bind AccuracySlider.Width}" />
                             </Grid>
                         </Flyout>
                     </FlyoutBase.AttachedFlyout>
