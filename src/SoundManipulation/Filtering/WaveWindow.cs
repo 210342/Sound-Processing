@@ -9,7 +9,7 @@ namespace SoundManipulation.Filtering
 {
     public delegate double WindowDelegate(int sampleIndex, int windowSize); 
 
-    public class FourierWindow
+    public class WaveWindow
     {
         #region Window delegates
 
@@ -31,15 +31,19 @@ namespace SoundManipulation.Filtering
 
         #endregion
 
+        private readonly double[] _values;
+
         public WindowDelegate Function { get; }
         public int Length { get; }
-        public IEnumerable<double> Values { get; }
+        public IEnumerable<double> Values => _values;
 
-        public FourierWindow(WindowDelegate windowFunction, int windowLength)
+        public WaveWindow(WindowDelegate windowFunction, int windowLength)
         {
             Function = windowFunction;
             Length = windowLength;
-            Values = Enumerable.Range(0, windowLength).Select(i => windowFunction(i, windowLength));
+            _values = Enumerable.Range(0, windowLength).Select(i => windowFunction(i, windowLength)).ToArray();
         }
+
+        public double this[int index] => _values[index];
     }
 }

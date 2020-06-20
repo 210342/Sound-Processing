@@ -38,8 +38,8 @@ namespace SoundManipulation
         IEnumerable<decimal?> GetFrequencies(string methodName, int windowSize, double accuracy);
         decimal? AMDF(double accuracy);
         decimal? CepstralAnalysis(double accuracy);
-        int? GetIndexOfGlobalMaximum(Func<Complex, double> selector);
-        IWave ApplyFilterByWindowedFourier(IFilter filter, FourierWindow window, int hopSize);
+        IWave GenerateAmdfWaveForWindow((int Start, int End) range);
+        IWave ApplyFilterByWindowedFourier(IFilter filter, WaveWindow window, int hopSize);
         IWave GenerateWaveOfFundamentalFrequencies(int windowSize);
         Task WriteToStreamAsync(Stream stream);
     }

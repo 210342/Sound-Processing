@@ -36,7 +36,7 @@
                 <Button x:Name="FundamentalFrequencyButton" Content="Show fundamental frequencies" VerticalAlignment="Stretch">
                     <Button.Flyout>
                         <Flyout>
-                            <ListView ItemsSource="{Binding Windows}">
+                            <ListView ItemsSource="{Binding Windows}" SelectedIndex="{Binding SelectedWindowIndex, Mode=TwoWay}">
                                 <ListView.ItemTemplate>
                                     <DataTemplate x:Name="FrequencyTemplate">
                                         <StackPanel Orientation="Horizontal">

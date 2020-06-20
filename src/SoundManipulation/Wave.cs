@@ -8,7 +8,6 @@ using System.IO;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Reflection;
-using MathNet.Numerics;
 using SoundManipulation.Filtering;
 using NAudio.Utils;
 
@@ -123,23 +122,22 @@ namespace SoundManipulation
                 return null;
             }
 
-            int sampleCount = SamplesCount + other.SamplesCount - 1;
-            IList<Complex> values = new List<Complex>();
+            int lastIndex = other.SamplesCount - 1;
+            int sampleCount = SamplesCount + lastIndex;
+            Complex[] values = new Complex[sampleCount];
             for (int i = 0; i < sampleCount; ++i)
             {
-                int leftOperandIndex = 0;
-                int rightOperandIndex = i;
-                Complex ithValue = 0;
+                int leftOperandIndex = Math.Max(0, i - lastIndex);
+                int rightOperandIndex = Math.Min(i, lastIndex);
                 while (leftOperandIndex < SamplesCount && rightOperandIndex >= 0)
                 {
                     if (rightOperandIndex < other.SamplesCount)
                     {
-                        ithValue += _samples[leftOperandIndex] * rhs._samples[rightOperandIndex];
+                        values[i] += _samples[leftOperandIndex] * rhs._samples[rightOperandIndex];
                     }
                     ++leftOperandIndex;
                     --rightOperandIndex;
                 }
-                values.Add(ithValue);
             }
             return new Wave(values, SamplePeriod);
         }
@@ -166,20 +164,26 @@ namespace SoundManipulation
 
         public decimal? AMDF(double accuracy)
         {
-            double[] delayedArray = new double[_samples.Length];
+            int length = _samples.Length;
+            if (length < 2)
+            {
+                return null;
+            }
+
+            double[] delayedArray = new double[length];
             delayedArray[0] = 0;
-            delayedArray[1] = 1;
-            for (int m = 2; m < _samples.Length; ++m)
+            delayedArray[1] = 0;
+            for (int m = 2; m < length; ++m)
             {
                 double sum = 0;
                 for (int i = 0; i < _samples.Length; ++i)
                 {
-                    Complex delayed = _samples[Math.Min(_samples.Length - 1, i + m)];
-                    sum += Complex.Abs(_samples[i] - delayed);
+                    Complex delayed = _samples[(i + m) % length];
+                    sum += (_samples[i] - delayed).Magnitude;
                 }
                 delayedArray[m] = sum;
-                if (delayedArray[m - 2] - delayedArray[m - 1] > accuracy * delayedArray[m - 2]
-                    && delayedArray[m] - delayedArray[m - 1] > accuracy * delayedArray[m-1])
+                if (delayedArray[m - 2] - delayedArray[m - 1] > accuracy * delayedArray[m - 1]
+                    && delayedArray[m] - delayedArray[m - 1] > accuracy * delayedArray[m - 1])
                 {
                     return 1 / ((m - 1) * SamplePeriod);
                 }
@@ -187,13 +191,36 @@ namespace SoundManipulation
             return null;
         }
 
+        public IWave GenerateAmdfWaveForWindow((int Start, int End) range)
+        {
+            int length = range.End - range.Start;
+            if (length < 2)
+            {
+                return null;
+            }
+
+            double[] delayedArray = new double[length];
+            delayedArray[0] = 0;
+            delayedArray[1] = 0;
+            for (int m = 2; m < length; ++m)
+            {
+                double sum = 0;
+                for (int i = range.Start; i < range.End; ++i)
+                {
+                    Complex delayed = _samples[(i + m) % length];
+                    sum += (_samples[i] - delayed).Magnitude;
+                }
+                delayedArray[m] = sum;
+            }
+            return new Wave(delayedArray, 1);
+        }
 
         public decimal? CepstralAnalysis(double accuracy)
         {
             IWave fourier = CalculateFourierTransform();
             IWave magnitude = new Wave(fourier.Magnitude, fourier.SamplePeriod);
             IWave cepstral = magnitude.CalculateInverseFourierTransform();
-            IWave scaledCepstral = new Wave(
+            Wave scaledCepstral = new Wave(
                 cepstral.Samples.Select(c => Complex.FromPolarCoordinates(Math.Log(c.Magnitude), c.Phase)),
                 Enumerable.Range(1, cepstral.SamplesCount + 1).Select(i => (double)(SampleRate / i)),
                 SamplePeriod,
@@ -274,9 +301,9 @@ namespace SoundManipulation
 
         #region Filters
 
-        public IWave ApplyFilterByWindowedFourier(IFilter filter, FourierWindow window, int hopSize)
+        public IWave ApplyFilterByWindowedFourier(IFilter filter, WaveWindow window, int hopSize)
         {
-            Wave filterWave = WaveFactory.GetFilterWave(filter, SampleRate) as Wave;
+            Wave filterWave = WaveFactory.GetFilterWave(filter, SampleRate, window.Function) as Wave;
             int fourierLength = filter.Length + window.Length - 1;
             filterWave = filterWave.ExtendWaveToLengthByAppendingZeros(fourierLength, filter.IsCausal);
             IEnumerable<Wave> windows = CutIntoWindows(window, hopSize)
@@ -345,7 +372,7 @@ namespace SoundManipulation
                 .ToArray();
         }
 
-        protected internal IEnumerable<Wave> CutIntoWindows(FourierWindow window, int hopSize)
+        protected internal IEnumerable<Wave> CutIntoWindows(WaveWindow window, int hopSize)
         {
             IList<Wave> windows = new List<Wave>();
             for (int i = 0; i < SamplesCount - window.Length; i += hopSize)

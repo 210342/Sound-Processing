@@ -1,6 +1,7 @@
 ﻿using SoundManipulation;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -60,9 +61,9 @@ namespace ViewModels
             }
         }
 
-        private IEnumerable<Window> _windows = Enumerable.Empty<Window>();
+        private ICollection<Window> _windows = new List<Window>();
 
-        public IEnumerable<Window> Windows
+        public ICollection<Window> Windows
         {
             get => _windows;
             set
@@ -72,12 +73,30 @@ namespace ViewModels
             }
         }
 
+        private int? _selectedWindowIndex = null;
+        public int? SelectedWindowIndex
+        {
+            get => _selectedWindowIndex;
+            set
+            {
+                _selectedWindowIndex = value;
+                OnPropertyChanged();
+            }
+        }
+
         public ChartData TopChart => Charts[IsUsingRealAndImaginary ? REAL : MAGNITUDE];
         public ChartData BottomChart => Charts[IsUsingRealAndImaginary ? IMAGINARY : PHASE];
 
         #endregion
 
+        #region Properties
+
+        public uint ChartsUnitStep { get; set; } = 8;
         public IDictionary<string, ChartData> Charts { get; } = new Dictionary<string, ChartData>();
+
+        #endregion
+
+        #region Constructors
 
         public TabContentViewModel() 
         {
@@ -101,25 +120,32 @@ namespace ViewModels
             wave.Value.PropertyChanged += OnWavePropertyChanged;
         }
 
-        private void GenerateCharts(IWave wave) => 
-            GenerateCharts(
-                wave, 
-                wave.Period.HasValue 
-                    ? (int)(2 * Wave.Value.Period / Wave.Value.SamplePeriod) + 1 
-                    : (int)wave.SampleRate / 4
-            );
+        #endregion
 
-        private void GenerateCharts(IWave wave, int maxSamplesCount)
+        public void GenerateCharts(int? maxSamplesCount, uint unitStep) =>
+            GenerateCharts(Wave.Value, maxSamplesCount ?? Wave.Value.SamplesCount, unitStep);
+
+        private void GenerateCharts(IWave wave, int maxSamplesCount, uint unitStep)
         {
-            IEnumerable<double> horizontal = wave.HorizontalAxis.Where((sample, index) => index % 8 == 0).Take(maxSamplesCount);
-            Charts[REAL] = new ChartData(horizontal, wave.Real.Where((sample, index) => index % 8 == 0).Take(maxSamplesCount), REAL);
-            Charts[IMAGINARY] = new ChartData(horizontal, wave.Imaginary.Where((sample, index) => index % 8 == 0).Take(maxSamplesCount), IMAGINARY);
-            Charts[MAGNITUDE] = new ChartData(horizontal, wave.Magnitude.Where((sample, index) => index % 8 == 0).Take(maxSamplesCount), MAGNITUDE);
-            Charts[PHASE] = new ChartData(horizontal, wave.Phase.Where((sample, index) => index % 8 == 0).Take(maxSamplesCount), PHASE);
+            IEnumerable<double> horizontal = wave.HorizontalAxis.Where((sample, index) => index % unitStep == 0).Take(maxSamplesCount);
+            Charts[REAL] = new ChartData(horizontal, wave.Real.Where((sample, index) => index % unitStep == 0).Take(maxSamplesCount), REAL);
+            Charts[IMAGINARY] = new ChartData(horizontal, wave.Imaginary.Where((sample, index) => index % unitStep == 0).Take(maxSamplesCount), IMAGINARY);
+            Charts[MAGNITUDE] = new ChartData(horizontal, wave.Magnitude.Where((sample, index) => index % unitStep == 0).Take(maxSamplesCount), MAGNITUDE);
+            Charts[PHASE] = new ChartData(horizontal, wave.Phase.Where((sample, index) => index % unitStep == 0).Take(maxSamplesCount), PHASE);
             IsUsingRealAndImaginary = !wave.IsComplex;
             OnPropertyChanged(nameof(TopChart));
             OnPropertyChanged(nameof(BottomChart));
         }
+
+        private void GenerateCharts(IWave wave) =>
+            GenerateCharts(
+                wave,
+                wave.Period.HasValue
+                    ? (int)(2 * Wave.Value.Period / Wave.Value.SamplePeriod) + 1
+                    : (int)wave.SampleRate / 4,
+                ChartsUnitStep
+            );
+
 
         private void OnWavePropertyChanged(object sender, PropertyChangedEventArgs args)
         {
@@ -129,13 +155,10 @@ namespace ViewModels
                 _dispatcher.RunAsync(() =>
                 {
                     decimal windowLength = Wave.Value.SamplePeriod * WindowSize;
-                    decimal period = Wave.Value.Period ?? (1 / Wave.Value.FundamentalFrequencies.Where(f => f.HasValue).FirstOrDefault() ?? 1);
-                    Windows = Enumerable
-                        .Range(0, Wave.Value.FundamentalFrequencies.Count())
-                        .Zip(
-                            Wave.Value.FundamentalFrequencies,
-                            (i, f) => new Window(i * windowLength, (i + 1) * windowLength, f)
-                        );
+                    decimal period = Wave.Value.Period ?? 1 / Wave.Value.FundamentalFrequencies.Where(f => f.HasValue).FirstOrDefault() ?? 1;
+                    Windows = Wave.Value.FundamentalFrequencies.Select((f, i) => 
+                        new Window((i * WindowSize, (i + 1) * WindowSize), i * windowLength, (i + 1) * windowLength, f)
+                    ).ToList();
                     return Task.CompletedTask;
                 });
             }

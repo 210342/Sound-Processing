@@ -64,6 +64,8 @@ namespace ViewModels
             IOController = controller;
         }
 
+        #region Commands
+
         public bool? CanSaveCurrentSound() => IOController?.CanSaveSoundFile(SelectedWave);
 
         public Task SaveCurrentSound() => IOController?.SaveSoundFile(SelectedWave);
@@ -75,13 +77,6 @@ namespace ViewModels
             {
                 SelectTab(AddTab(wave));
             }
-        }
-
-        public void CloseTab(object tab)
-        {
-            Contents.Remove(tab as TabContentViewModel);
-            SelectedIndex = Math.Min(SelectedIndex, Contents.Count - 1);
-            SelectedTab = SelectedIndex < 0 ? null : Contents.ElementAt(SelectedIndex);
         }
 
         public async Task CalculatePeriodWithAMDF(int windowSize, double accuracy)
@@ -152,7 +147,7 @@ namespace ViewModels
             SelectTab(newTab);
         }
 
-        public async Task FilterSignal(IFilter filter, FourierWindow window, int hopSize)
+        public async Task FilterSignal(IFilter filter, WaveWindow window, int hopSize)
         {
             if (SelectedWave is null)
             {
@@ -164,7 +159,7 @@ namespace ViewModels
             {
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
-                IWave wave = SelectedWave.Convolve(WaveFactory.GetFilterWave(filter, SelectedWave.SampleRate));
+                IWave wave = SelectedWave.Convolve(WaveFactory.GetFilterWave(filter, SelectedWave.SampleRate, window.Function));
                 stopwatch.Stop();
                 await _dispatcher.RunAsync(() =>
                 {
@@ -189,9 +184,24 @@ namespace ViewModels
             await Task.WhenAll(convolutionFiltered, fourierFiltered);
         }
 
+        #endregion
+
+        public void CloseTab(object tab)
+        {
+            if (!(tab is TabContentViewModel content))
+            {
+                return;
+            }
+            content.PropertyChanged -= OnWaveWindowSelectionChanged;
+            Contents.Remove(content);
+            SelectedIndex = Math.Min(SelectedIndex, Contents.Count - 1);
+            SelectedTab = SelectedIndex < 0 ? null : Contents.ElementAt(SelectedIndex);
+        }
+
         private TabContentViewModel AddTab(TitledObject<IWave> wave)
         {
             TabContentViewModel newContent = new TabContentViewModel(wave, _dispatcher);
+            newContent.PropertyChanged += OnWaveWindowSelectionChanged;
             Contents.Add(newContent);
             return newContent;
         }
@@ -200,6 +210,26 @@ namespace ViewModels
         {
             SelectedTab = tab;
             SelectedIndex = Contents.IndexOf(tab);
+        }
+
+        private async void OnWaveWindowSelectionChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (!e.PropertyName.Equals(nameof(SelectedTab.SelectedWindowIndex))
+                || !SelectedTab.SelectedWindowIndex.HasValue)
+            {
+                return;
+            }
+
+            IWave amdf = await Task.Run(() => SelectedWave.GenerateAmdfWaveForWindow(
+                SelectedTab.Windows.ElementAt(SelectedTab.SelectedWindowIndex ?? 0).SampleRange
+            ));
+            await _dispatcher.RunAsync(() =>
+            {
+                var newTab = AddTab(new TitledObject<IWave>(amdf, $"Amdf of {SelectedTab.SelectedWindowIndex}th window"));
+                newTab.GenerateCharts(null, 1);
+                SelectTab(newTab);
+                return Task.CompletedTask;
+            });
         }
     }
 }

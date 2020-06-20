@@ -181,7 +181,7 @@ namespace ViewModels
             }
         }
 
-        private int _windowLength = 32;
+        private int _windowLength = 1024;
         public double WindowLength
         {
             get => _windowLength;
@@ -203,7 +203,7 @@ namespace ViewModels
             }
         }
 
-        private int _hopSize = 16;
+        private int _hopSize = 512;
         public double HopSize
         {
             get => _hopSize;
@@ -214,7 +214,7 @@ namespace ViewModels
             }
         }
 
-        private int _cutoffFrequency = 2500;
+        private int _cutoffFrequency = 400;
 
         public double CutoffFrequency
         {
@@ -245,6 +245,8 @@ namespace ViewModels
             FilterCommand = new AsyncCommand(() => Job(Filter));
         }
 
+        #region Commands
+
         public Task Open() => MainMDIViewModel?.OpenSoundFile();
 
         public bool CanSave() => MainMDIViewModel?.CanSaveCurrentSound() ?? false;
@@ -259,6 +261,8 @@ namespace ViewModels
         public Task ShowBaseFrequencySignal() => MainMDIViewModel?.ShowSignalWithFundamentalFrequencies(GetSelectedWindowSize());
 
         public Task Filter() => MainMDIViewModel?.FilterSignal(GetFilterType(), GetWindow(), _hopSize);
+
+        #endregion
 
         private async Task Job(Func<Task> job)
         {
@@ -289,19 +293,19 @@ namespace ViewModels
             }
         }
 
-        private FourierWindow GetWindow()
+        private WaveWindow GetWindow()
         {
             if (IsUsingHammingWindow)
             {
-                return new FourierWindow(FourierWindow.Hamming, _windowLength);
+                return new WaveWindow(WaveWindow.Hamming, _windowLength);
             }
             else if(IsUsingHannWindow)
             {
-                return new FourierWindow(FourierWindow.VonHann, _windowLength);
+                return new WaveWindow(WaveWindow.VonHann, _windowLength);
             }
             else
             {
-                return new FourierWindow(FourierWindow.Rectangular, _windowLength);
+                return new WaveWindow(WaveWindow.Rectangular, _windowLength);
             }
         }
 
