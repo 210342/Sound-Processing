@@ -1,5 +1,5 @@
 # Sound-Processing
-A project for a sound andimage processing course
+A project for a sound and image processing course
 
 Application written in UWP using MVVM design pattern.
 
