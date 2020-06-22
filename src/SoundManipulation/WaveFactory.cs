@@ -29,10 +29,13 @@ namespace SoundManipulation
 
         public static IWave WaveWithFrequency(IEnumerable<double> samples, double? frequency, double samplePeriod, int sampleCount)
         {
+            double amplitude = samples.Max();
+
             double twoPi = 2 * Math.PI;
             var newSamples = frequency.HasValue
-                ? samples
-                    .Select((s, i) => s * Math.Sin(i * samplePeriod * twoPi * frequency.Value))
+                ? Enumerable
+                    .Range(0, sampleCount)
+                    .Select(i => amplitude * Math.Sin(i * samplePeriod * twoPi * frequency.Value))
                 : Enumerable.Repeat(0.0, sampleCount);
             return new Wave(newSamples, Convert.ToDecimal(samplePeriod))
             {
